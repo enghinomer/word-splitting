@@ -1,3 +1,7 @@
+package com.ionos.domains.demo.service;
+
+import com.ionos.domains.demo.model.Candidate;
+import com.ionos.domains.demo.model.ProbDistribution;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
@@ -5,7 +9,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Segmentation {
+public class SegmentationService {
 
     private ProbDistribution unigramDistribution;
     private ProbDistribution bigramDistribution;
@@ -14,7 +18,7 @@ public class Segmentation {
 
     private final int longestWord = 20;
 
-    public Segmentation() throws IOException {
+    public SegmentationService() throws IOException {
         unigramDistribution = new ProbDistribution("count_1w.txt");
         bigramDistribution = new ProbDistribution("count_2w.txt");
     }
@@ -72,7 +76,7 @@ public class Segmentation {
         }
     }
 
-    //Return a list of all possible (first, rem) pairs, len(first)<=longestWord
+    //Return a list of all possible splits
     private List<List<String>> getSplits(String text) {
         List<List<String>> splits = new ArrayList<>();
         for (int i=0; i<Math.min(text.length(), longestWord); i++) {
@@ -91,12 +95,16 @@ public class Segmentation {
                         .collect(Collectors.toList()));
     }
 
+    public Candidate segment(String text) {
+        return this.segment(text, null);
+    }
+
     public static void main(String[] args) throws IOException {
-        Segmentation segmentation = new Segmentation();
-        Candidate candidate = segmentation.segment("thisissparta", null);
-        for (Candidate c : segmentation.lastCandidates) {
+        SegmentationService segmentationService = new SegmentationService();
+        Candidate candidate = segmentationService.segment("thisissparta", null);
+        /*for (Candidate c : segmentation.lastCandidates) {
             System.out.println(c.getProbability() + " " + Arrays.toString(c.getWords().toArray()));
-        }
+        }*/
         System.out.println(candidate.getProbability());
         System.out.println(Arrays.toString(candidate.getWords().toArray()));
     }

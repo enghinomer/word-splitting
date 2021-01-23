@@ -1,5 +1,6 @@
 package com.ionos.domains.demo;
 
+import com.ionos.domains.demo.service.SimilarityService;
 import edu.cmu.lti.lexical_db.ILexicalDatabase;
 import edu.cmu.lti.lexical_db.NictWordNet;
 import edu.cmu.lti.ws4j.RelatednessCalculator;
@@ -16,12 +17,20 @@ import net.sf.extjwnl.dictionary.Dictionary;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.Arrays;
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 
 @SpringBootTest
 class DemoApplicationTests {
+	Map<String, Double> wordNetSim = new HashMap<>();
+	Map<String, Double> lSim = new HashMap<>();
+	Map<String, Double> embeddingSim = new HashMap<>();
 
 	@Test
 	void contextLoads() {
@@ -37,6 +46,24 @@ class DemoApplicationTests {
 		for (IndexWord indexWord : word.getIndexWordArray()) {
 			System.out.println("==== " + indexWord.getLemma() + " ====");
 			for (Synset synset : indexWord.getSenses()) {
+				System.out.println(synset.getGloss());
+				for (Word w : synset.getWords()) {
+					System.out.println(w.getLemma());
+				}
+			}
+		}
+	}
+
+	@Test
+	void wordNetHyponym() throws JWNLException, CloneNotSupportedException {
+		Dictionary dictionary = Dictionary.getDefaultResourceInstance();
+		//IndexWord word = dictionary.getIndexWord(POS.VERB, "accomplish");
+		IndexWordSet word = dictionary.lookupAllIndexWords("grand");
+		for (IndexWord indexWord : word.getIndexWordArray()) {
+			System.out.println("==== " + indexWord.getLemma() + " ====");
+			for (Synset synset : indexWord.getSenses()) {
+				PointerUtils.getDirectHypernyms(synset).print();
+				System.out.println(synset.getGloss());
 				for (Word w : synset.getWords()) {
 					System.out.println(w.getLemma());
 				}
@@ -66,5 +93,4 @@ class DemoApplicationTests {
 			System.out.println( rc.getClass().getName()+"\t"+s );
 		}
 	}
-
 }
