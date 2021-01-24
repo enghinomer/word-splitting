@@ -1,23 +1,33 @@
 package com.ionos.domains.demo.configuration;
 
 import com.ionos.domains.demo.model.ProbDistribution;
+import com.ionos.domains.demo.service.ProbabilityService;
 import com.ionos.domains.demo.service.WordsEmbeddingsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
+import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
 
 @Configuration
 public class ApplicationConfiguration {
 
+    public static final String EN_UNIGRAM = "EN-unigram";
+    public static final String EN_BIGRAM = "EN-bigram";
+
+    @Autowired
+    public Jedis jedis;
+
     @Bean
-    public ProbDistribution enUnigramsDistribution() throws IOException {
-        return new ProbDistribution("count_1w.txt");
+    public ProbabilityService enUnigramsDistribution() throws IOException {
+        return new ProbabilityService("count_1w.txt", EN_UNIGRAM, jedis);
     }
 
     @Bean
-    public ProbDistribution enBigramsDistribution() throws IOException {
-        return new ProbDistribution("count_2w.txt");
+    public ProbabilityService enBigramsDistribution() throws IOException {
+        return new ProbabilityService("count_2w.txt", EN_BIGRAM, jedis);
     }
 
     @Bean
