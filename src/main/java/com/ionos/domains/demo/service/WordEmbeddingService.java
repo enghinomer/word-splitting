@@ -7,11 +7,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class WordEmbeddingService {
+    public static final String FILE_NAME = "/home/enghin/Documents/Personal/Projects/wordSuggestion/datasets/cc.en.300.vec";
     Map<String, double[]> wordEmbeddings = new HashMap<>();
     int N = 300;
 
     public WordEmbeddingService() throws Exception {
-        try (BufferedReader br = new BufferedReader(new FileReader("/home/enghin/Documents/Personal/Projects/wordSuggestion/datasets/cc.en.300.vec"))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
             long nr = 1;
             String line = br.readLine();
             line = br.readLine();
