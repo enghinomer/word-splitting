@@ -1,6 +1,5 @@
 package com.ionos.domains.demo;
 
-import com.ionos.domains.demo.service.SimilarityService;
 import edu.cmu.lti.lexical_db.ILexicalDatabase;
 import edu.cmu.lti.lexical_db.NictWordNet;
 import edu.cmu.lti.ws4j.RelatednessCalculator;
@@ -8,22 +7,11 @@ import edu.cmu.lti.ws4j.impl.*;
 import edu.cmu.lti.ws4j.util.WS4JConfiguration;
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.*;
-import net.sf.extjwnl.data.list.PointerTargetNodeList;
-import net.sf.extjwnl.data.relationship.AsymmetricRelationship;
-import net.sf.extjwnl.data.relationship.Relationship;
-import net.sf.extjwnl.data.relationship.RelationshipFinder;
-import net.sf.extjwnl.data.relationship.RelationshipList;
 import net.sf.extjwnl.dictionary.Dictionary;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 
 @SpringBootTest

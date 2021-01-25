@@ -7,6 +7,7 @@ public class Candidate {
 
     private double probability;
     private List<String> words;
+    private Language language;
 
     public Candidate() {
     }
@@ -14,6 +15,12 @@ public class Candidate {
     public Candidate(double probability, List<String> words) {
         this.probability = probability;
         this.words = new ArrayList<>(words);
+    }
+
+    public Candidate(double probability, List<String> words, Language language) {
+        this.probability = probability;
+        this.words = words;
+        this.language = language;
     }
 
     public double getProbability() {
@@ -30,5 +37,13 @@ public class Candidate {
 
     public void setWords(List<String> words) {
         this.words = words;
+    }
+
+    public Language getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(Language language) {
+        this.language = language;
     }
 }

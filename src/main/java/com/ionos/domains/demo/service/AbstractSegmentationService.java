@@ -1,6 +1,7 @@
 package com.ionos.domains.demo.service;
 
 import com.ionos.domains.demo.model.Candidate;
+import com.ionos.domains.demo.model.Language;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -81,7 +82,9 @@ public abstract class AbstractSegmentationService {
     }
 
     public Candidate segment(String text) {
-        return this.segment(text, null);
+        Candidate candidate = this.segment(text, null);
+        candidate.setLanguage(Language.EN);
+        return candidate;
     }
 
     public List<Candidate> getLastCandidates() {

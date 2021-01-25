@@ -42,9 +42,9 @@ public class SegmentationService {
                     terms.get(remaining + " " + first)));
         }
 
-        /*for (Candidate candidate : candidates) {
+        for (Candidate candidate : candidates) {
             System.out.println(candidate.getProbability() + " " + Arrays.toString(candidate.getWords().toArray()));
-        }*/
+        }
 
         lastCandidates = candidates;
         //System.out.println("==================");
@@ -101,7 +101,7 @@ public class SegmentationService {
 
     public static void main(String[] args) throws IOException {
         SegmentationService segmentationService = new SegmentationService();
-        Candidate candidate = segmentationService.segment("thisissparta", null);
+        Candidate candidate = segmentationService.segment("iwinbecauseican", null);
         /*for (Candidate c : segmentation.lastCandidates) {
             System.out.println(c.getProbability() + " " + Arrays.toString(c.getWords().toArray()));
         }*/

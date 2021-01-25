@@ -33,7 +33,7 @@ public class ApplicationConfiguration {
 
     @Bean
     public WordsEmbeddingsService enWordsEmbeddings() throws Exception {
-        return new WordsEmbeddingsService("/home/enghin/Documents/Personal/Projects/wordSuggestion/datasets/slim.cc.en.300.vec",
+        return new WordsEmbeddingsService("/home/enghin/DataSets/slim.cc.en.300.vec",
                 EN_WORD_EMBD, jedis);
     }
 }
