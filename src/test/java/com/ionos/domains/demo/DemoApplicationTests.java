@@ -80,6 +80,14 @@ class DemoApplicationTests {
 		printSimilarities("dog", "soul");
 	}
 
+	@Test
+	void t() {
+		String text = "a b c d e";
+		String first = text.substring(0, text.indexOf(" "));
+		String second = text.substring(text.indexOf(" ")+1);
+		System.out.println(first);
+	}
+
 	private void printSimilarities(String word1, String word2) {
 		ILexicalDatabase db = new NictWordNet();
 		RelatednessCalculator[] rcs = {

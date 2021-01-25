@@ -1,29 +1,37 @@
 package com.ionos.domains.demo.service;
 
 import org.springframework.stereotype.Service;
+import redis.clients.jedis.Jedis;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 //@Service
 public class WordsEmbeddingsService {
+    private Jedis jedis;
     Map<String, double[]> wordEmbeddings = new HashMap<>();
     int N = 300;
+    private String key;
 
-    public WordsEmbeddingsService(String fileName) throws Exception {
+    public WordsEmbeddingsService(String fileName, String key, Jedis jedis) throws Exception {
+        this.jedis = jedis;
+        this.key = key;
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             long nr = 1;
             String line = br.readLine();
-            line = br.readLine();
             while (line != null) {
-                String [] parts = line.split(" ");
+                String word = line.substring(0, line.indexOf(" "));
+                String embedding = line.substring(line.indexOf(" ")+1);
+                jedis.hsetnx(key, word, embedding);
+                /*String [] parts = line.split(" ");
                 double[] embeddingsVector = new double[N];
                 for (int i=1; i< parts.length; i++) {
                     embeddingsVector[i-1] = Double.parseDouble(parts[i]);
                 }
-                wordEmbeddings.put(parts[0], embeddingsVector);
+                wordEmbeddings.put(parts[0], embeddingsVector);*/
                 System.out.println(nr++);
                 line = br.readLine();
             }
@@ -31,11 +39,16 @@ public class WordsEmbeddingsService {
     }
 
     public double getCosSimilarity(String word1, String word2) {
-        double[] word1Embedding = wordEmbeddings.get(word1);
-        double[] word2Embedding = wordEmbeddings.get(word2);
-        if (word1Embedding == null || word2Embedding == null) {
+        if (Boolean.FALSE.equals(jedis.hexists(key, word1)) || Boolean.FALSE.equals(jedis.hexists(key, word2))) {
             return 0.0;
         }
+        String embeddingText1 = jedis.hget(key, word1);
+        String embeddingText2 = jedis.hget(key, word2);
+        double[] word1Embedding = Arrays.stream(embeddingText1.split(" ")).mapToDouble(Double::parseDouble).toArray();
+        double[] word2Embedding = Arrays.stream(embeddingText2.split(" ")).mapToDouble(Double::parseDouble).toArray();
+        /*if (word1Embedding == null || word2Embedding == null) {
+            return 0.0;
+        }*/
 
         assert word1Embedding.length == word2Embedding.length;
         double dotProduct = dotProduct(word1Embedding, word2Embedding);

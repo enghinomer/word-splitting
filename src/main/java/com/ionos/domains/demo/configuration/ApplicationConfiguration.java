@@ -16,6 +16,7 @@ public class ApplicationConfiguration {
 
     public static final String EN_UNIGRAM = "EN-unigram";
     public static final String EN_BIGRAM = "EN-bigram";
+    public static final String EN_WORD_EMBD = "EN-WordEmbd";
 
     @Autowired
     public Jedis jedis;
@@ -32,6 +33,7 @@ public class ApplicationConfiguration {
 
     @Bean
     public WordsEmbeddingsService enWordsEmbeddings() throws Exception {
-        return new WordsEmbeddingsService("/home/enghin/DataSets/300.test.txt");
+        return new WordsEmbeddingsService("/home/enghin/Documents/Personal/Projects/wordSuggestion/datasets/slim.cc.en.300.vec",
+                EN_WORD_EMBD, jedis);
     }
 }

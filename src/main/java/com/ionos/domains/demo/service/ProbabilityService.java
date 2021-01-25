@@ -33,7 +33,7 @@ public class ProbabilityService {
     }
 
     public double getGramProbability(String gram) {
-        if (jedis.hexists(key, gram)) {
+        if (Boolean.TRUE.equals(jedis.hexists(key, gram))) {
             return (double) Long.parseLong(jedis.hget(key, gram))/N;
         }
         /*if (data.containsKey(gram)) {
