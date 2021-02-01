@@ -118,7 +118,7 @@ public class SimilarityServiceTemp {
     }
 
     public static void main(String[] args) throws Exception {
-        String referenceWord = "ilovesport";
+        String referenceWord = "naturalplants";
         SimilarityServiceTemp similarityServiceTemp = new SimilarityServiceTemp();
 
         getSimilarities(referenceWord, similarityServiceTemp);
@@ -130,19 +130,19 @@ public class SimilarityServiceTemp {
     }
 
     private static void getSimilarities(String referenceWord, SimilarityServiceTemp similarityServiceTemp) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader("/home/enghin/Documents/Tasks/domainsUK.txt"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader("/home/enghin/Documents/Tasks/domainsNameUK.txt"))) {
             String line = reader.readLine();
             while (line != null) {
                 line = line.trim();
                 System.out.println(line);
-                wordNetSim.put(line, similarityServiceTemp.getDomainsWordNetSimilarity(referenceWord, line));
-                lSim.put(line, similarityServiceTemp.getLevenshteiniSimilarity(referenceWord, line));
+                //wordNetSim.put(line, similarityServiceTemp.getDomainsWordNetSimilarity(referenceWord, line));
+                //lSim.put(line, similarityServiceTemp.getLevenshteiniSimilarity(referenceWord, line));
                 embeddingSim.put(line, similarityServiceTemp.getDomainsEmbeddingsSimilarity(referenceWord, line));
                 line = reader.readLine();
             }
         }
         wordNetSim = similarityServiceTemp.sortByValue(wordNetSim);
-        lSim = similarityServiceTemp.sortByValue(lSim);
         embeddingSim = similarityServiceTemp.sortByValue(embeddingSim);
+        lSim = similarityServiceTemp.sortByValue(lSim);
     }
 }

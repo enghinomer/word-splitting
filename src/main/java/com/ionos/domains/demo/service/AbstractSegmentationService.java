@@ -83,11 +83,12 @@ public abstract class AbstractSegmentationService {
 
     public Candidate segment(String text) {
         Candidate candidate = this.segment(text, null);
-        candidate.setLanguage(Language.EN);
         return candidate;
     }
 
-    public List<Candidate> getLastCandidates() {
+    public List<Candidate> getAllCandidates(String text) {
+        segment(text);
+        Collections.sort(this.lastCandidates);
         return this.lastCandidates;
     }
 

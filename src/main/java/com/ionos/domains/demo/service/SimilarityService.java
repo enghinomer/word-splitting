@@ -17,7 +17,9 @@ public class SimilarityService {
     @Autowired
     private WordsEmbeddingsService enWordsEmbeddings;
 
-    public double getLevenshteiniSimilarity(String word1, String word2) {
+
+
+    public double getLevenshteinSimilarity(String word1, String word2) {
         return 1 - (double) this.getLevenshteinDistance(word1, word2)/(Math.max(word1.length(), word2.length()));
     }
 

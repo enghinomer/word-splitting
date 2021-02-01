@@ -4,6 +4,9 @@ import com.ionos.domains.demo.model.Candidate;
 import com.ionos.domains.demo.model.ProbDistribution;
 import org.springframework.util.StringUtils;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,8 +22,8 @@ public class SegmentationService {
     private final int longestWord = 20;
 
     public SegmentationService() throws IOException {
-        unigramDistribution = new ProbDistribution("count_1w.txt");
-        bigramDistribution = new ProbDistribution("count_2w.txt");
+        unigramDistribution = new ProbDistribution("en_unigrams.txt");
+        bigramDistribution = new ProbDistribution("en_bigrams.txt");
     }
 
     public Candidate segment(String text, String prev) {
@@ -42,9 +45,9 @@ public class SegmentationService {
                     terms.get(remaining + " " + first)));
         }
 
-        for (Candidate candidate : candidates) {
+        /*for (Candidate candidate : candidates) {
             System.out.println(candidate.getProbability() + " " + Arrays.toString(candidate.getWords().toArray()));
-        }
+        }*/
 
         lastCandidates = candidates;
         //System.out.println("==================");
@@ -99,9 +102,26 @@ public class SegmentationService {
         return this.segment(text, null);
     }
 
+    private static List<String> queryDomains(String tld) {
+        List<String> domains = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader("/home/enghin/Documents/Tasks/domainsUK.txt"))) {
+            String line = reader.readLine();
+            while (line != null) {
+                domains.add(line.trim());
+                line = reader.readLine();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return domains;
+    }
+
     public static void main(String[] args) throws IOException {
         SegmentationService segmentationService = new SegmentationService();
-        Candidate candidate = segmentationService.segment("iwinbecauseican", null);
+        Candidate candidate = segmentationService.segment("lovespain", null);
+
         /*for (Candidate c : segmentation.lastCandidates) {
             System.out.println(c.getProbability() + " " + Arrays.toString(c.getWords().toArray()));
         }*/

@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class WordEmbeddingService {
-    public static final String FILE_NAME = "/home/enghin/Documents/Personal/Projects/wordSuggestion/datasets/cc.en.300.vec";
+    public static final String FILE_NAME = "/home/enghin/Documents/Personal/Projects/wordSuggestion/datasets/slim.cc.en.300.vec";
     Map<String, double[]> wordEmbeddings = new HashMap<>();
     int N = 300;
 
@@ -15,7 +15,6 @@ public class WordEmbeddingService {
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
             long nr = 1;
             String line = br.readLine();
-            line = br.readLine();
             while (line != null) {
                 String [] parts = line.split(" ");
                 double[] embeddingsVector = new double[N];
@@ -40,6 +39,19 @@ public class WordEmbeddingService {
         double dotProduct = dotProduct(word1Embedding, word2Embedding);
         double sumNorm = vectorNorm(word1Embedding) * vectorNorm(word2Embedding);
         return dotProduct / sumNorm;
+    }
+
+    public double getEuclidianDistance(String word1, String word2) {
+        if (!wordEmbeddings.containsKey(word1) || !wordEmbeddings.containsKey(word2)) {
+            return 0.0;
+        }
+        double distance = 0.0;
+        double[] embeddingText1 = wordEmbeddings.get(word1);
+        double[] embeddingText2 = wordEmbeddings.get(word2);
+        for (int i=0; i<N; i++) {
+            distance += Math.pow(embeddingText1[i] - embeddingText2[i], 2);
+        }
+        return Math.sqrt(distance);
     }
 
     private double dotProduct(double[] v1, double[] v2) {

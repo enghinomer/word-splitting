@@ -56,6 +56,19 @@ public class WordsEmbeddingsService {
         return dotProduct / sumNorm;
     }
 
+    public double getEuclidianDistance(String word1, String word2) {
+        if (Boolean.FALSE.equals(jedis.hexists(key, word1)) || Boolean.FALSE.equals(jedis.hexists(key, word2))) {
+            return 0.0;
+        }
+        double distance = 0.0;
+        String[] embeddingText1 = jedis.hget(key, word1).split(" ");
+        String[] embeddingText2 = jedis.hget(key, word2).split(" ");
+        for (int i=0; i<N; i++) {
+            distance += Math.pow(Double.parseDouble(embeddingText1[i]) - Double.parseDouble(embeddingText2[i]), 2);
+        }
+        return Math.sqrt(distance);
+    }
+
     private double dotProduct(double[] v1, double[] v2) {
         assert v1.length == v2.length;
         double result = 0;

@@ -24,15 +24,15 @@ public class EnSegmentationService extends AbstractSegmentationService {
 
     @Override
     double conditionalProbability(String word, String prev) {
-        if (jedis.hexists(EN_BIGRAM, prev + " " + word) && jedis.hexists(EN_UNIGRAM, prev)) {
+        /*if (jedis.hexists(EN_BIGRAM, prev + " " + word) && jedis.hexists(EN_UNIGRAM, prev)) {
             return (double) Long.parseLong(jedis.hget(EN_BIGRAM, prev + " " + word)) / Long.parseLong(jedis.hget(EN_UNIGRAM, prev));
         } else {
            return enUnigramsDistribution.getGramProbability(word);
-        }
-        /*if (enBigramsDistribution.getData().containsKey(prev + " " + word) && enUnigramsDistribution.getData().get(prev) != null) {
+        }*/
+        if (enBigramsDistribution.getData().containsKey(prev + " " + word) && enUnigramsDistribution.getData().get(prev) != null) {
             return (double)enBigramsDistribution.getData().get(prev + " " + word) / enUnigramsDistribution.getData().get(prev);
         } else {
-            return enUnigramsDistribution.getGramProbability(word);
-        }*/
+            return enUnigramsDistribution.getGramProbabilityMap(word);
+        }
     }
 }

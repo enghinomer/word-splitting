@@ -2,8 +2,9 @@ package com.ionos.domains.demo.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public class Candidate {
+public class Candidate implements Comparable<Candidate> {
 
     private double probability;
     private List<String> words;
@@ -45,5 +46,25 @@ public class Candidate {
 
     public void setLanguage(Language language) {
         this.language = language;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Candidate candidate = (Candidate) o;
+        return Double.compare(candidate.probability, probability) == 0 &&
+                Objects.equals(words, candidate.words) &&
+                language == candidate.language;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(probability, words, language);
+    }
+
+    @Override
+    public int compareTo(Candidate o) {
+        return Double.compare(o.getProbability(), this.getProbability());
     }
 }
