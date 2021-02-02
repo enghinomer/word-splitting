@@ -13,6 +13,7 @@ import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 public class NamesResource {
@@ -26,8 +27,8 @@ public class NamesResource {
     @Autowired
     private WordsEmbeddingsService enWordsEmbeddings;
 
-    @Autowired
-    private Jedis jedis;
+    //@Autowired
+    //private Jedis jedis;
 
     @Autowired
     private SimilarityService similarityService;
@@ -40,8 +41,8 @@ public class NamesResource {
 
     @GetMapping
     public Mono<Object> getNames() throws IOException {
-        jedis.set("myKey", "myValue");
-        String cachedResponse = jedis.get("myKey");
+        //jedis.set("myKey", "myValue");
+        //String cachedResponse = jedis.get("myKey");
         Candidate candidate = enSegmentationService.segment("iwanttorun");
         double similarity = enWordsEmbeddings.getCosSimilarity("sport", "running");
         Candidate candidate1 = languageDetectionService.getBestCandidate("iwinbecauseican");
@@ -68,11 +69,11 @@ public class NamesResource {
 
     @GetMapping(value = "similarity")
     public Mono<Object> getSimilarities(@RequestParam(defaultValue = "") String text,
-                                        @RequestParam(defaultValue = "10") int limit) {
+                                        @RequestParam(defaultValue = "10") int limit) throws ExecutionException, InterruptedException {
         int limitValue = limit <= 0 ? Integer.parseInt("10") : limit;
         SimilarDomains similarDomains = new SimilarDomains();
         similarDomains.setLevenshteinDomains(domainsService.getLevenshteinSimilarityBasedDomains(text).subList(0, limitValue));
-        similarDomains.setEmbeddingsDomains(domainsService.getWordEmbeddingsSimilarityBasedDomains(text).subList(0, limitValue));
+        similarDomains.setEmbeddingsDomains(domainsService.getWordEmbeddingsSimilaritySegmentedDomains(text).subList(0, limitValue));
         return Mono.just(similarDomains);
     }
 }

@@ -13,8 +13,8 @@ public class DeSegmentationService extends AbstractSegmentationService {
     @Autowired
     private ProbabilityService deBigramsDistribution;
 
-    @Autowired
-    private Jedis jedis;
+    //@Autowired
+    //private Jedis jedis;
 
     @Override
     double conditionalProbability(String word, String prev) {

@@ -19,8 +19,8 @@ public class EnSegmentationService extends AbstractSegmentationService {
     @Autowired
     private ProbabilityService enBigramsDistribution;
 
-    @Autowired
-    private Jedis jedis;
+    //@Autowired
+    //private Jedis jedis;
 
     @Override
     double conditionalProbability(String word, String prev) {

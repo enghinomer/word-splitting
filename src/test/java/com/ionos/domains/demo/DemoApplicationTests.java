@@ -70,8 +70,8 @@ class DemoApplicationTests {
 
 	@Test
 	void t() {
-		String text = "a b c d e";
-		String first = text.substring(0, text.indexOf(" "));
+		String text = "a:2.3 b:2.5 c:3.3";
+		String first = text.substring(0, text.indexOf("b:"));
 		String second = text.substring(text.indexOf(" ")+1);
 		System.out.println(first);
 	}

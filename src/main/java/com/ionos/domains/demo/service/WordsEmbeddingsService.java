@@ -2,6 +2,7 @@ package com.ionos.domains.demo.service;
 
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -11,13 +12,15 @@ import java.util.Map;
 
 //@Service
 public class WordsEmbeddingsService {
-    private Jedis jedis;
+    //private Jedis jedis;
+    private JedisPool jedisPool;
     Map<String, double[]> wordEmbeddings = new HashMap<>();
     int N = 300;
     private String key;
 
-    public WordsEmbeddingsService(String fileName, String key, Jedis jedis) throws Exception {
-        this.jedis = jedis;
+    public WordsEmbeddingsService(String fileName, String key, JedisPool jedisPool) throws Exception {
+        Jedis jedis;
+        this.jedisPool = jedisPool;
         this.key = key;
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             long nr = 1;
@@ -25,7 +28,9 @@ public class WordsEmbeddingsService {
             while (line != null) {
                 String word = line.substring(0, line.indexOf(" "));
                 String embedding = line.substring(line.indexOf(" ")+1);
+                jedis = jedisPool.getResource();
                 jedis.hsetnx(key, word, embedding);
+                jedis.close();
                 /*String [] parts = line.split(" ");
                 double[] embeddingsVector = new double[N];
                 for (int i=1; i< parts.length; i++) {
@@ -39,11 +44,18 @@ public class WordsEmbeddingsService {
     }
 
     public double getCosSimilarity(String word1, String word2) {
-        if (Boolean.FALSE.equals(jedis.hexists(key, word1)) || Boolean.FALSE.equals(jedis.hexists(key, word2))) {
-            return 0.0;
-        }
-        String embeddingText1 = jedis.hget(key, word1);
-        String embeddingText2 = jedis.hget(key, word2);
+        String embeddingText1;
+        String embeddingText2;
+            Jedis jedis;
+            jedis = jedisPool.getResource();
+            if (Boolean.FALSE.equals(jedis.hexists(key, word1)) || Boolean.FALSE.equals(jedis.hexists(key, word2))) {
+                jedis.close();
+                return 0.0;
+            }
+            embeddingText1 = jedis.hget(key, word1);
+            embeddingText2 = jedis.hget(key, word2);
+            jedis.close();
+
         double[] word1Embedding = Arrays.stream(embeddingText1.split(" ")).mapToDouble(Double::parseDouble).toArray();
         double[] word2Embedding = Arrays.stream(embeddingText2.split(" ")).mapToDouble(Double::parseDouble).toArray();
         /*if (word1Embedding == null || word2Embedding == null) {
@@ -57,6 +69,7 @@ public class WordsEmbeddingsService {
     }
 
     public double getEuclidianDistance(String word1, String word2) {
+        Jedis jedis = jedisPool.getResource();
         if (Boolean.FALSE.equals(jedis.hexists(key, word1)) || Boolean.FALSE.equals(jedis.hexists(key, word2))) {
             return 0.0;
         }

@@ -1,8 +1,11 @@
 package com.ionos.domains.demo.service;
 
 import com.ionos.domains.demo.model.Candidate;
-import org.springframework.beans.factory.ListableBeanFactoryExtensionsKt;
+import com.ionos.domains.demo.model.Domain;
+import com.ionos.domains.demo.model.Language;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -10,6 +13,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,6 +25,10 @@ public class DomainsService {
 
     @Autowired
     private LanguageDetectionService languageDetectionService;
+
+    @Autowired
+    @Qualifier("fixedThreadPool")
+    private ExecutorService executorService;
 
     public String getDomainName(String domain) {
         return domain.substring(0, domain.indexOf("."));
@@ -38,6 +46,14 @@ public class DomainsService {
         return queryDomains(null);
     }
 
+    public List<Domain> getSegmentedDomains(String domainName) {
+        final var tld = getTld(domainName);
+        if (isCCTld(tld)) {
+            return querySegmentedDomains(tld);
+        }
+        return querySegmentedDomains(null);
+    }
+
     public List<String> getLevenshteinSimilarityBasedDomains(String domainName) {
         String domainWithoutTld = getDomainName(domainName);
         Map<String, Double> levenshteinSimilarities = new HashMap<>();
@@ -48,7 +64,6 @@ public class DomainsService {
         return new ArrayList<>(sortByValue(levenshteinSimilarities).keySet());
     }
 
-    // TODO: 27.01.2021 Consider tld
     public List<String> getWordEmbeddingsSimilarityBasedDomains(String domainName) {
         String domainWithoutTld = getDomainName(domainName);
         String domainTld = getTld(domainName);
@@ -57,13 +72,60 @@ public class DomainsService {
         for (String domain : getDomains(domainName)) {
             System.out.println(domain);
             String tld = getTld(domain);
-            double tldSimilarity = getTldsSimilarities(domainTld, tld);
+            double tldSimilarity = similarityService.getTldsSimilarity(domainTld, tld);
             Candidate candidate = languageDetectionService.getBestCandidate(getDomainName(domain));
-            double domainsSimilarity = similarityService.getDomainsEmbeddingsSimilarity(referenceCandidate, candidate);
-            double totalSimilarity = domainsSimilarity + 0.15*tldSimilarity;
+            double domainsSimilarity = similarityService.getCandidatesEmbeddingsSimilarity(referenceCandidate, candidate);
+            double totalSimilarity = domainsSimilarity + 0.1*tldSimilarity;
             embeddingsSimilarities.put(domain, totalSimilarity);
         }
         return new ArrayList<>(sortByValue(embeddingsSimilarities).keySet());
+    }
+
+    public List<String> getWordEmbeddingsSimilaritySegmentedDomains(String domainName) throws ExecutionException, InterruptedException {
+        String domainWithoutTld = getDomainName(domainName);
+        String domainTld = getTld(domainName);
+        Candidate referenceCandidate = languageDetectionService.getBestCandidate(domainWithoutTld);
+        Domain referenceDomain = new Domain();
+        referenceDomain.setKeyWords(referenceCandidate.getWords());
+        referenceDomain.setTld(domainTld);
+        referenceDomain.setLanguage(referenceCandidate.getLanguage());
+        Map<String, Double> embeddingsSimilarities = new HashMap<>();
+       /* for (Domain domain : getSegmentedDomains(domainName)) {
+            System.out.println(domain.getKeyWords().get(0));
+            String tld = domain.getTld();
+            double tldSimilarity = similarityService.getTldsSimilarity(domainTld, tld);
+            //Candidate candidate = languageDetectionService.getBestCandidate(getDomainName(domain));
+            double domainsSimilarity = similarityService.getDomainsEmbeddingsSimilarity(referenceDomain, domain);
+            double totalSimilarity = domainsSimilarity + 0.1*tldSimilarity;
+            embeddingsSimilarities.put(StringUtils.join(domain.getKeyWords(), ""), totalSimilarity);
+        }*/
+
+        List<Future<?>> futures = new ArrayList<>();
+        //ExecutorService executorService = Executors.newFixedThreadPool(16);
+        for (Domain domain : getSegmentedDomains(domainName)) {
+            Future<?> future = executorService.submit(() -> embeddingsSimilarities.put(domain.getDomainName(), testSIm(domain, referenceDomain)));
+            futures.add(future);
+        }
+        try {
+            for (Future<?> future : futures) {
+                future.get(); // do anything you need, e.g. isDone(), ...
+            }
+            System.out.println("done?");
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+        //getSegmentedDomains(domainName).parallelStream().forEach(domain -> embeddingsSimilarities.put(domain.getDomainName(), testSIm(domain, referenceDomain)));
+        return new ArrayList<>(sortByValue(embeddingsSimilarities).keySet());
+    }
+
+    private double testSIm(Domain domain, Domain referenceDomain) {
+        System.out.println(domain.getDomainName());
+        String tld = domain.getTld();
+        //double tldSimilarity = similarityService.getTldsSimilarity(domainTld, tld);
+        //Candidate candidate = languageDetectionService.getBestCandidate(getDomainName(domain));
+        double domainsSimilarity = similarityService.getDomainsEmbeddingsSimilarity(referenceDomain, domain);
+        double totalSimilarity = domainsSimilarity;// + 0.1*tldSimilarity;
+        return totalSimilarity;
     }
 
     private double getTldsSimilarities(String tld1, String tld2) {
@@ -80,6 +142,25 @@ public class DomainsService {
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return domains;
+    }
+
+    private List<Domain> querySegmentedDomains(String tld) {
+        List<Domain> domains = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader("/home/enghin/Documents/Tasks/domainsUKWords.txt"))) {
+            String line = reader.readLine();
+            while (line != null) {
+                Domain domain = new Domain();
+                domain.setKeyWords(Arrays.asList(line.trim().split(" ")));
+                domain.setLanguage(Language.EN);
+                domain.setTld("uk");
+                domain.setDomainName(StringUtils.join(domain.getKeyWords(), ""));
+                domains.add(domain);
+                line = reader.readLine();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -1,11 +1,20 @@
 package com.ionos.domains.demo.service;
 
 import com.ionos.domains.demo.model.Candidate;
+import com.ionos.domains.demo.model.Domain;
 import com.ionos.domains.demo.model.Language;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
+import javax.annotation.PostConstruct;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -17,6 +26,27 @@ public class SimilarityService {
     @Autowired
     private WordsEmbeddingsService enWordsEmbeddings;
 
+    @Autowired
+    private JedisPool pool;
+
+    private Jedis jedis;
+
+    private static final String TLDS_SIM_FILE = "slimTlds.txt";
+    private static final String TLDS_SIM_KEY = "TLD_SIM";
+
+    @PostConstruct
+    private void postConstruct() throws IOException {
+        jedis = pool.getResource();
+        try (BufferedReader reader = new BufferedReader(new FileReader(TLDS_SIM_FILE))) {
+            String line = reader.readLine();
+            while (line != null) {
+                final String[] split = line.split("\\t");
+                jedis.hsetnx(TLDS_SIM_KEY, split[0], split[1]);
+                line = reader.readLine();
+            }
+        }
+        jedis.close();
+    }
 
 
     public double getLevenshteinSimilarity(String word1, String word2) {
@@ -28,7 +58,7 @@ public class SimilarityService {
         return levenshteinDistance.apply(word1, word2);
     }
 
-    public double getDomainsEmbeddingsSimilarity(Candidate domain1, Candidate domain2) {
+    public double getCandidatesEmbeddingsSimilarity(Candidate domain1, Candidate domain2) {
         if (!domain1.getLanguage().equals(domain2.getLanguage())) {
             return -10;
         }
@@ -41,6 +71,44 @@ public class SimilarityService {
             }
         }
         return wordSimilarity /(domain1.getWords().size() + domain2.getWords().size());
+    }
+
+    public double getDomainsEmbeddingsSimilarity(Domain domain1, Domain domain2) {
+        if (!domain1.getLanguage().equals(domain2.getLanguage())) {
+            return -10;
+        }
+
+        WordsEmbeddingsService embeddingsService = getEmbeddingService(domain1.getLanguage());
+        double wordSimilarity = 0.0;
+        for (String w1 : domain1.getKeyWords()) {
+            for (String w2 : domain2.getKeyWords()) {
+                wordSimilarity += embeddingsService.getCosSimilarity(w1, w2);
+            }
+        }
+        return wordSimilarity /(domain1.getKeyWords().size() + domain2.getKeyWords().size());
+    }
+
+    public double getTldsSimilarity(String tld1, String tld2) {
+        if (Boolean.FALSE.equals(jedis.hexists(TLDS_SIM_KEY, tld1))) {
+            return 0.0;
+        }
+        String tldSimilarities = jedis.hget(TLDS_SIM_KEY, tld1);
+        final int beginIndex = tldSimilarities.indexOf(tld2 + ":");
+        if (beginIndex == -1) {
+            return 0.0;
+        }
+        String firstSubString = tldSimilarities.substring(beginIndex);
+        String sim;
+        int firstSpaceIndex = firstSubString.indexOf(" ");
+        if (firstSpaceIndex != -1) {
+            sim = firstSubString.substring(firstSubString.indexOf(":") + 1, firstSpaceIndex);
+        } else {
+            sim = firstSubString.substring(firstSubString.indexOf(":") + 1);
+        }
+        if (StringUtils.isBlank(sim)) {
+            return 0.0;
+        }
+        return Double.parseDouble(sim);
     }
 
     private WordsEmbeddingsService getEmbeddingService(Language language) {

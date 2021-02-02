@@ -1,6 +1,7 @@
 package com.ionos.domains.demo.service;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -14,12 +15,14 @@ public class ProbabilityService {
     private final Map<String, Long> data = new HashMap<>();
     protected BufferedReader reader;
     protected String key;
-    private final Jedis jedis;
+    private final JedisPool jedisPool;
+    private Jedis jedis;
 
-    public ProbabilityService(String fileName, String key, Jedis jedis, long nrTokens) throws IOException {
+    public ProbabilityService(String fileName, String key, JedisPool jedisPool, long nrTokens) throws IOException {
         System.out.println("Loading " + key);
         this.key = key;
-        this.jedis = jedis;
+        this.jedisPool = jedisPool;
+        jedis = jedisPool.getResource();
         this.totalTokens = nrTokens;
         reader = new BufferedReader(new FileReader(fileName));
         String line = reader.readLine();
@@ -31,12 +34,15 @@ public class ProbabilityService {
             jedis.hsetnx(key, split[0], split[1]);
             line = reader.readLine();
         }
+        jedis.close();
     }
 
     public double getGramProbability(String gram) {
+        jedis = jedisPool.getResource();
         if (Boolean.TRUE.equals(jedis.hexists(key, gram))) {
             return (double) Long.parseLong(jedis.hget(key, gram))/ totalTokens;
         }
+        jedis.close();
         /*if (data.containsKey(gram)) {
             return (double)data.get(gram)/N;
         }*/

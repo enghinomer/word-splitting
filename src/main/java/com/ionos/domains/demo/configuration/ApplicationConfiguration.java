@@ -8,8 +8,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Configuration
 public class ApplicationConfiguration {
@@ -34,7 +37,12 @@ public class ApplicationConfiguration {
     public static final long IT_TOKENS = 4178523593L;
 
     @Autowired
-    public Jedis jedis;
+    public JedisPool jedis;
+
+    @Bean("fixedThreadPool")
+    public ExecutorService cachedThreadPool() {
+        return Executors.newFixedThreadPool(32);
+    }
 
     @Bean
     public ProbabilityService enUnigramsDistribution() throws IOException {
