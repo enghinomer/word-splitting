@@ -110,7 +110,7 @@ public class DomainsService {
             for (Future<?> future : futures) {
                 future.get(); // do anything you need, e.g. isDone(), ...
             }
-            System.out.println("done?");
+            System.out.println("done");
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }

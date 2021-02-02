@@ -1,9 +1,5 @@
 package com.ionos.domains.demo.service;
 
-import edu.cmu.lti.lexical_db.ILexicalDatabase;
-import edu.cmu.lti.lexical_db.NictWordNet;
-import edu.cmu.lti.ws4j.impl.*;
-import edu.cmu.lti.ws4j.util.WS4JConfiguration;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 
 import java.io.*;
@@ -22,24 +18,6 @@ public class SimilarityServiceTemp {
 
     }
 
-    public double wordNetSimilarities(String word1, String word2) {
-        ILexicalDatabase db = new NictWordNet();
-        /*RelatednessCalculator[] rcs = {
-                new HirstStOnge(db), new LeacockChodorow(db), new Lesk(db),  new WuPalmer(db),
-                new Resnik(db), new JiangConrath(db), new Lin(db), new Path(db)
-        };*/
-
-        WS4JConfiguration.getInstance().setMFS(true);
-        //System.out.println("Similarity between " + word1 + " and " + word2);
-        /*for ( RelatednessCalculator rc : rcs ) {
-            double s = rc.calcRelatednessOfWords(word1, word2);
-            System.out.println( rc.getClass().getName()+"\t"+s );
-        }*/
-        double sim = new Resnik(db).calcRelatednessOfWords(word1, word2);
-        if (sim == Double.MAX_VALUE) return 10;
-        return sim;
-    }
-
     public int getLevenshteinDistance(String word1, String word2) {
         LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
         return levenshteinDistance.apply(word1, word2);
@@ -47,20 +25,6 @@ public class SimilarityServiceTemp {
 
     public double getLevenshteiniSimilarity(String word1, String word2) {
         return 1 - (double) this.getLevenshteinDistance(word1, word2)/(Math.max(word1.length(), word2.length()));
-    }
-
-    public double getDomainsWordNetSimilarity(String reference, String domainName2) {
-        List<String> words1 = segmentationService.segment(reference).getWords();
-        List<String> words2 = segmentationService.segment(domainName2).getWords();
-
-        double wordSimilarity = 0.0;
-        for (String w1 : words1) {
-            for (String w2 : words2) {
-                wordSimilarity += wordNetSimilarities(w1, w2);
-            }
-        }
-
-        return wordSimilarity /(words1.size() + words2.size());
     }
 
     public double getDomainsEmbeddingsSimilarity(String reference, String domainName) {
@@ -73,17 +37,6 @@ public class SimilarityServiceTemp {
                 wordSimilarity += wordEmbeddingService.getCosSimilarity(w1, w2);
             }
         }
-        return wordSimilarity /(words1.size() + words2.size());
-    }
-
-    public double getDomainsWordNetSimilarity(List<String> words1, List<String> words2) {
-        double wordSimilarity = 0.0;
-        for (String w1 : words1) {
-            for (String w2 : words2) {
-                wordSimilarity += wordNetSimilarities(w1, w2);
-            }
-        }
-
         return wordSimilarity /(words1.size() + words2.size());
     }
 
@@ -123,7 +76,6 @@ public class SimilarityServiceTemp {
 
         getSimilarities(referenceWord, similarityServiceTemp);
 
-        similarityServiceTemp.wordNetSimilarities("dog", "soul");
 
         System.out.println(similarityServiceTemp.getLevenshteiniSimilarity("cat", "dog"));
         System.out.println(similarityServiceTemp.getLevenshteiniSimilarity("cat", "at"));

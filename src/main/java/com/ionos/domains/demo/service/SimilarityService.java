@@ -27,11 +27,23 @@ public class SimilarityService {
     private WordsEmbeddingsService enWordsEmbeddings;
 
     @Autowired
+    private WordsEmbeddingsService esWordsEmbeddings;
+
+    @Autowired
+    private WordsEmbeddingsService frWordsEmbeddings;
+
+    @Autowired
+    private WordsEmbeddingsService itWordsEmbeddings;
+
+    @Autowired
+    private WordsEmbeddingsService deWordsEmbeddings;
+
+    @Autowired
     private JedisPool pool;
 
     private Jedis jedis;
 
-    private static final String TLDS_SIM_FILE = "slimTlds.txt";
+    private static final String TLDS_SIM_FILE = "datasets/slimTlds.txt";
     private static final String TLDS_SIM_KEY = "TLD_SIM";
 
     @PostConstruct
@@ -116,9 +128,13 @@ public class SimilarityService {
             case EN:
                 return enWordsEmbeddings;
             case DE:
+                return deWordsEmbeddings;
             case ES:
+                return esWordsEmbeddings;
             case FR:
+                return frWordsEmbeddings;
             case IT:
+                return itWordsEmbeddings;
             default:
                 throw new IllegalArgumentException();
         }

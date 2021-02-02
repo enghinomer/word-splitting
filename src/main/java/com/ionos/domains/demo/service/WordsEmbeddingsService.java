@@ -19,28 +19,32 @@ public class WordsEmbeddingsService {
     private String key;
 
     public WordsEmbeddingsService(String fileName, String key, JedisPool jedisPool) throws Exception {
-        Jedis jedis;
+        System.out.println("Loading " + key);
         this.jedisPool = jedisPool;
+        Jedis jedis = jedisPool.getResource();
         this.key = key;
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-            long nr = 1;
-            String line = br.readLine();
-            while (line != null) {
-                String word = line.substring(0, line.indexOf(" "));
-                String embedding = line.substring(line.indexOf(" ")+1);
-                jedis = jedisPool.getResource();
-                jedis.hsetnx(key, word, embedding);
-                jedis.close();
+        if (Boolean.FALSE.equals(jedis.exists(key))) {
+            try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+                long nr = 1;
+                String line = br.readLine();
+                while (line != null) {
+                    String word = line.substring(0, line.indexOf(" "));
+                    String embedding = line.substring(line.indexOf(" ") + 1);
+                    //jedis = jedisPool.getResource();
+                    jedis.hsetnx(key, word, embedding);
+                    //jedis.close();
                 /*String [] parts = line.split(" ");
                 double[] embeddingsVector = new double[N];
                 for (int i=1; i< parts.length; i++) {
                     embeddingsVector[i-1] = Double.parseDouble(parts[i]);
                 }
                 wordEmbeddings.put(parts[0], embeddingsVector);*/
-                System.out.println(nr++);
-                line = br.readLine();
+                    System.out.println(nr++);
+                    line = br.readLine();
+                }
             }
         }
+        jedis.close();
     }
 
     public double getCosSimilarity(String word1, String word2) {

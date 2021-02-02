@@ -4,12 +4,12 @@ import com.ionos.domains.demo.client.GoogleBooksClient;
 import com.ionos.domains.demo.model.Candidate;
 import com.ionos.domains.demo.model.SimilarDomains;
 import com.ionos.domains.demo.service.*;
+import com.ionos.domains.demo.service.segmentation.EnSegmentationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
-import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
 import java.util.List;

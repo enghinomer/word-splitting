@@ -2,6 +2,7 @@ package com.ionos.domains.demo.service;
 
 import com.ionos.domains.demo.model.Candidate;
 import com.ionos.domains.demo.model.Language;
+import com.ionos.domains.demo.service.segmentation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
