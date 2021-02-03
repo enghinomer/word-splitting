@@ -52,13 +52,17 @@ public class WordsEmbeddingsService {
         String embeddingText2;
             Jedis jedis;
             jedis = jedisPool.getResource();
-            if (Boolean.FALSE.equals(jedis.hexists(key, word1)) || Boolean.FALSE.equals(jedis.hexists(key, word2))) {
+            /*if (Boolean.FALSE.equals(jedis.hexists(key, word1)) || Boolean.FALSE.equals(jedis.hexists(key, word2))) {
                 jedis.close();
                 return 0.0;
-            }
+            }*/
             embeddingText1 = jedis.hget(key, word1);
             embeddingText2 = jedis.hget(key, word2);
             jedis.close();
+
+            if (embeddingText1 == null || embeddingText2 == null) {
+                return 0.0;
+            }
 
         double[] word1Embedding = Arrays.stream(embeddingText1.split(" ")).mapToDouble(Double::parseDouble).toArray();
         double[] word2Embedding = Arrays.stream(embeddingText2.split(" ")).mapToDouble(Double::parseDouble).toArray();

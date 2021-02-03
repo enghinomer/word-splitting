@@ -14,7 +14,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 @Service
 public class DomainsService {
@@ -89,7 +88,7 @@ public class DomainsService {
         referenceDomain.setKeyWords(referenceCandidate.getWords());
         referenceDomain.setTld(domainTld);
         referenceDomain.setLanguage(referenceCandidate.getLanguage());
-        Map<String, Double> embeddingsSimilarities = new HashMap<>();
+        Map<String, Double> embeddingsSimilarities = new ConcurrentHashMap<>();
        /* for (Domain domain : getSegmentedDomains(domainName)) {
             System.out.println(domain.getKeyWords().get(0));
             String tld = domain.getTld();
@@ -101,35 +100,25 @@ public class DomainsService {
         }*/
 
         List<Future<?>> futures = new ArrayList<>();
-        //ExecutorService executorService = Executors.newFixedThreadPool(16);
         for (Domain domain : getSegmentedDomains(domainName)) {
-            Future<?> future = executorService.submit(() -> embeddingsSimilarities.put(domain.getDomainName(), testSIm(domain, referenceDomain)));
+            Future<?> future = executorService.submit(() -> embeddingsSimilarities.put(domain.getDomainName(),
+                    computeDomainSimilarities(domain, referenceDomain)));
             futures.add(future);
         }
-        try {
-            for (Future<?> future : futures) {
-                future.get(); // do anything you need, e.g. isDone(), ...
-            }
-            System.out.println("done");
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
+        for (Future<?> future : futures) {
+            future.get();
         }
-        //getSegmentedDomains(domainName).parallelStream().forEach(domain -> embeddingsSimilarities.put(domain.getDomainName(), testSIm(domain, referenceDomain)));
+        System.out.println("done");
         return new ArrayList<>(sortByValue(embeddingsSimilarities).keySet());
     }
 
-    private double testSIm(Domain domain, Domain referenceDomain) {
+    private double computeDomainSimilarities(Domain domain, Domain referenceDomain) {
         System.out.println(domain.getDomainName());
         String tld = domain.getTld();
-        //double tldSimilarity = similarityService.getTldsSimilarity(domainTld, tld);
-        //Candidate candidate = languageDetectionService.getBestCandidate(getDomainName(domain));
+        double tldSimilarity = similarityService.getTldsSimilarity(referenceDomain.getTld(), tld);
         double domainsSimilarity = similarityService.getDomainsEmbeddingsSimilarity(referenceDomain, domain);
-        double totalSimilarity = domainsSimilarity;// + 0.1*tldSimilarity;
+        double totalSimilarity = domainsSimilarity + 0.1*tldSimilarity;
         return totalSimilarity;
-    }
-
-    private double getTldsSimilarities(String tld1, String tld2) {
-        return 0;
     }
 
     private List<String> queryDomains(String tld) {

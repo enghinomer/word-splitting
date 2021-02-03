@@ -21,9 +21,9 @@ public class JedisConfiguration {
 
     private JedisPoolConfig buildPoolConfig() {
         final JedisPoolConfig poolConfig = new JedisPoolConfig();
-        poolConfig.setMaxTotal(32);
-        poolConfig.setMaxIdle(32);
-        poolConfig.setMinIdle(32);
+        poolConfig.setMaxTotal(256);
+        poolConfig.setMaxIdle(128);
+        poolConfig.setMinIdle(128);
         poolConfig.setTestOnBorrow(true);
         poolConfig.setTestOnReturn(true);
         poolConfig.setTestWhileIdle(true);poolConfig.setMinEvictableIdleTimeMillis(Duration.ofSeconds(60).toMillis());

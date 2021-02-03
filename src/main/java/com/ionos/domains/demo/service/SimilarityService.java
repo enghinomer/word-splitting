@@ -101,10 +101,16 @@ public class SimilarityService {
     }
 
     public double getTldsSimilarity(String tld1, String tld2) {
-        if (Boolean.FALSE.equals(jedis.hexists(TLDS_SIM_KEY, tld1))) {
+        Jedis jedisInstance = pool.getResource();
+        /*if (Boolean.FALSE.equals(jedisInstance.hexists(TLDS_SIM_KEY, tld1))) {
+            jedisInstance.close();
+            return 0.0;
+        }*/
+        String tldSimilarities = jedisInstance.hget(TLDS_SIM_KEY, tld1);
+        jedisInstance.close();
+        if (tldSimilarities == null) {
             return 0.0;
         }
-        String tldSimilarities = jedis.hget(TLDS_SIM_KEY, tld1);
         final int beginIndex = tldSimilarities.indexOf(tld2 + ":");
         if (beginIndex == -1) {
             return 0.0;
