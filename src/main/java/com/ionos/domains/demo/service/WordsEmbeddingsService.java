@@ -50,30 +50,38 @@ public class WordsEmbeddingsService {
     public double getCosSimilarity(String word1, String word2) {
         String embeddingText1;
         String embeddingText2;
-            Jedis jedis;
-            jedis = jedisPool.getResource();
-            /*if (Boolean.FALSE.equals(jedis.hexists(key, word1)) || Boolean.FALSE.equals(jedis.hexists(key, word2))) {
-                jedis.close();
-                return 0.0;
-            }*/
-            embeddingText1 = jedis.hget(key, word1);
-            embeddingText2 = jedis.hget(key, word2);
-            jedis.close();
+        Jedis jedis;
+        jedis = jedisPool.getResource();
+        embeddingText1 = jedis.hget(key, word1);
+        embeddingText2 = jedis.hget(key, word2);
+        jedis.close();
 
-            if (embeddingText1 == null || embeddingText2 == null) {
-                return 0.0;
-            }
-
-        double[] word1Embedding = Arrays.stream(embeddingText1.split(" ")).mapToDouble(Double::parseDouble).toArray();
-        double[] word2Embedding = Arrays.stream(embeddingText2.split(" ")).mapToDouble(Double::parseDouble).toArray();
-        /*if (word1Embedding == null || word2Embedding == null) {
+        if (embeddingText1 == null || embeddingText2 == null) {
             return 0.0;
-        }*/
+        }
+
+        double dotProduct = 0.0;
+        double norm1 = 0.0;
+        double norm2 = 0.0;
+        String [] embedding1 = embeddingText1.split(" ");
+        String [] embedding2 = embeddingText2.split(" ");
+        for (int i = 0; i<embedding1.length; i++) {
+            double s1 = Double.parseDouble(embedding1[i]);
+            double s2 = Double.parseDouble(embedding2[i]);
+            dotProduct += s1*s2;
+            norm1 += s1*s1;
+            norm2 += s2*s2;
+        }
+
+        norm1 = Math.sqrt(norm1);
+        norm2 = Math.sqrt(norm2);
+        /*double[] word1Embedding = Arrays.stream(embeddingText1.split(" ")).mapToDouble(Double::parseDouble).toArray();
+        double[] word2Embedding = Arrays.stream(embeddingText2.split(" ")).mapToDouble(Double::parseDouble).toArray();
 
         assert word1Embedding.length == word2Embedding.length;
         double dotProduct = dotProduct(word1Embedding, word2Embedding);
-        double sumNorm = vectorNorm(word1Embedding) * vectorNorm(word2Embedding);
-        return dotProduct / sumNorm;
+        double sumNorm = vectorNorm(word1Embedding) * vectorNorm(word2Embedding);*/
+        return dotProduct / (norm1*norm2);
     }
 
     public double getEuclidianDistance(String word1, String word2) {
