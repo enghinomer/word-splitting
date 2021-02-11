@@ -8,18 +8,21 @@ import java.util.Map;
 
 public class ProbDistribution {
 
-    private final long N = 1024908267229L; // nr of tokens in corpus
+    private long N = 1708180445L; // nr of tokens in corpus
     private Map<String, Long> data = new HashMap<>();
     private BufferedReader reader;
     private long numberOfTokens;
 
-    public ProbDistribution(String fileName) throws IOException {
+    public ProbDistribution(String fileName, long N) throws IOException {
+        this.N = N;
         reader = new BufferedReader(new FileReader(fileName));
         String line = reader.readLine();
         while (line != null) {
             final String[] split = line.split("\\t");
             long frequency = Long.parseLong(split[1]);
-            data.put(split[0], frequency);
+            if (!data.containsKey(split[0].toLowerCase())) {
+                data.put(split[0].toLowerCase(), frequency);
+            }
             this.numberOfTokens += frequency;
             line = reader.readLine();
         }
@@ -38,7 +41,8 @@ public class ProbDistribution {
 
     private double getProbabilityUnkGram(String gram) {
         // avoid long words
-        return 10/(N * (Math.pow(10, gram.length())));
+        long temp = 4178523593L;
+        return 10/(temp * (Math.pow(10, gram.length())));
     }
 
     public static void main(String[] args) throws IOException {

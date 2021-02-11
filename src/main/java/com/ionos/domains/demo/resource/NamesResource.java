@@ -2,14 +2,18 @@ package com.ionos.domains.demo.resource;
 
 import com.ionos.domains.demo.client.GoogleBooksClient;
 import com.ionos.domains.demo.model.Candidate;
+import com.ionos.domains.demo.model.Language;
 import com.ionos.domains.demo.model.SimilarDomains;
 import com.ionos.domains.demo.service.*;
 import com.ionos.domains.demo.service.segmentation.EnSegmentationService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,8 +31,8 @@ public class NamesResource {
     @Autowired
     private WordsEmbeddingsService enWordsEmbeddings;
 
-    //@Autowired
-    //private Jedis jedis;
+    @Autowired
+    private JedisPool jedisPool;
 
     @Autowired
     private SimilarityService similarityService;
@@ -41,19 +45,23 @@ public class NamesResource {
 
     @GetMapping
     public Mono<Object> getNames() throws IOException {
-        //jedis.set("myKey", "myValue");
-        //String cachedResponse = jedis.get("myKey");
-        Candidate candidate = enSegmentationService.segment("iwanttorun");
-        double similarity = enWordsEmbeddings.getCosSimilarity("sport", "running");
-        Candidate candidate1 = languageDetectionService.getBestCandidate("iwinbecauseican");
-        Candidate candidate2 = languageDetectionService.getBestCandidate("iwanttorun");
+        Jedis jedis = jedisPool.getResource();
+        int i = 0;
         for (String name : domainsService.getDomains("grandmaster.uk")) {
-            System.out.println(name);
-            languageDetectionService.getBestCandidate(name);
-            //double sim = similarityService.getDomainsEmbeddingsSimilarity(candidate1, candidate2);
-            //double simLevenstain = similarityService.getLevenshteinSimilarity("iwinbecauseican", "iwanttorun");
+            if (i%6 ==0) {
+                String domainName = domainsService.getDomainName(name);
+                Candidate candidateBest = languageDetectionService.getBestCandidate(domainName);
+                if (Language.DE.equals(candidateBest.getLanguage())) {
+                    System.out.println(name + " " + String.join(" ", candidateBest.getWords()));
+                    jedis.hset("Domain-DE", domainName, String.join(" ", candidateBest.getWords()));
+                }
+                //double sim = similarityService.getDomainsEmbeddingsSimilarity(candidate1, candidate2);
+                //double simLevenstain = similarityService.getLevenshteinSimilarity("iwinbecauseican", "iwanttorun");
 
+            }
+            i++;
         }
+        jedis.close();
         return googleBooksClient.getNgramStats();
     }
 
@@ -61,6 +69,7 @@ public class NamesResource {
     public Mono<Object> getSegmentation(@RequestParam(defaultValue = "") String text,
                                         @RequestParam(defaultValue = "1") int limit) {
         int limitValue = limit <= 0 ? Integer.parseInt("1") : limit;
+        text = text.toLowerCase();
         String domainName = domainsService.getDomainName(text);
         String tld = domainsService.getTld(text);
         List<Candidate> candidates = languageDetectionService.getCandidates(domainName);

@@ -100,6 +100,21 @@ public class SimilarityService {
         return wordSimilarity /(domain1.getKeyWords().size() + domain2.getKeyWords().size());
     }
 
+    public double getEmbeddingsSimilarity(Domain domain1, Domain domain2) {
+        if (!domain1.getLanguage().equals(domain2.getLanguage())) {
+            return -10;
+        }
+
+        WordsEmbeddingsService embeddingsService = getEmbeddingService(domain1.getLanguage());
+        double wordSimilarity = 0.0;
+        for (double[] e1 : domain1.getWordEmbeddings()) {
+            for (double[] e2 : domain2.getWordEmbeddings()) {
+                wordSimilarity += embeddingsService.getCosineSimilarity(e1, e2);
+            }
+        }
+        return wordSimilarity /(domain1.getKeyWords().size() + domain2.getKeyWords().size());
+    }
+
     public double getTldsSimilarity(String tld1, String tld2) {
         Jedis jedisInstance = pool.getResource();
         /*if (Boolean.FALSE.equals(jedisInstance.hexists(TLDS_SIM_KEY, tld1))) {

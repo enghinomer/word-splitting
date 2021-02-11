@@ -5,8 +5,7 @@ import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
-import static com.ionos.domains.demo.configuration.ApplicationConfiguration.EN_BIGRAM;
-import static com.ionos.domains.demo.configuration.ApplicationConfiguration.EN_UNIGRAM;
+import static com.ionos.domains.demo.configuration.ApplicationConfiguration.*;
 
 @Service
 public class FrSegmentationService extends AbstractSegmentationService {
@@ -23,8 +22,8 @@ public class FrSegmentationService extends AbstractSegmentationService {
     @Override
     double conditionalProbability(String word, String prev) {
         Jedis jedis = jedisPool.getResource();
-        if (jedis.hexists(EN_BIGRAM, prev + " " + word) && jedis.hexists(EN_UNIGRAM, prev)) {
-            final var prob = (double) Long.parseLong(jedis.hget(EN_BIGRAM, prev + " " + word)) / Long.parseLong(jedis.hget(EN_UNIGRAM, prev));
+        if (jedis.hexists(FR_BIGRAM, prev + " " + word) && jedis.hexists(FR_UNIGRAM, prev)) {
+            final var prob = (double) Long.parseLong(jedis.hget(FR_BIGRAM, prev + " " + word)) / Long.parseLong(jedis.hget(FR_UNIGRAM, prev));
             jedis.close();
             return prob;
         } else {

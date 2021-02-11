@@ -1,5 +1,6 @@
 package com.ionos.domains.demo.service;
 
+import com.ionos.domains.demo.client.JedisClient;
 import com.ionos.domains.demo.model.Candidate;
 import com.ionos.domains.demo.model.Domain;
 import com.ionos.domains.demo.model.Language;
@@ -7,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import redis.clients.jedis.Jedis;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -24,6 +26,9 @@ public class DomainsService {
 
     @Autowired
     private LanguageDetectionService languageDetectionService;
+
+    @Autowired
+    private JedisClient jedisClient;
 
     @Autowired
     @Qualifier("fixedThreadPool")
@@ -55,8 +60,9 @@ public class DomainsService {
 
     public List<String> getLevenshteinSimilarityBasedDomains(String domainName) {
         String domainWithoutTld = getDomainName(domainName);
+        Language language = languageDetectionService.getBestCandidate(domainWithoutTld).getLanguage();
         Map<String, Double> levenshteinSimilarities = new HashMap<>();
-        for (String domain : getDomains(domainName)) {
+        for (String domain : jedisClient.getDomainsFromRedis(language)) {
             levenshteinSimilarities.put(domain,
                     similarityService.getLevenshteinSimilarity(domainWithoutTld, getDomainName(domain)));
         }
@@ -85,9 +91,11 @@ public class DomainsService {
         String domainTld = getTld(domainName);
         Candidate referenceCandidate = languageDetectionService.getBestCandidate(domainWithoutTld);
         Domain referenceDomain = new Domain();
+        referenceDomain.setDomainName(domainName);
         referenceDomain.setKeyWords(referenceCandidate.getWords());
         referenceDomain.setTld(domainTld);
         referenceDomain.setLanguage(referenceCandidate.getLanguage());
+        referenceDomain.setWordEmbeddings(jedisClient.getWordEmbeddings(referenceDomain.getKeyWords(), referenceDomain.getLanguage()));
         Map<String, Double> embeddingsSimilarities = new ConcurrentHashMap<>();
        /* for (Domain domain : getSegmentedDomains(domainName)) {
             System.out.println(domain.getKeyWords().get(0));
@@ -100,7 +108,7 @@ public class DomainsService {
         }*/
 
         List<Future<?>> futures = new ArrayList<>();
-        for (Domain domain : getSegmentedDomains(domainName)) {
+        for (Domain domain : getSegmentedDomains(referenceDomain.getLanguage())) {
             Future<?> future = executorService.submit(() -> embeddingsSimilarities.put(domain.getDomainName(),
                     computeDomainSimilarities(domain, referenceDomain)));
             futures.add(future);
@@ -116,14 +124,14 @@ public class DomainsService {
         System.out.println(domain.getDomainName());
         String tld = domain.getTld();
         double tldSimilarity = similarityService.getTldsSimilarity(referenceDomain.getTld(), tld);
-        double domainsSimilarity = similarityService.getDomainsEmbeddingsSimilarity(referenceDomain, domain);
+        double domainsSimilarity = similarityService.getEmbeddingsSimilarity(referenceDomain, domain);
         double totalSimilarity = domainsSimilarity + 0.1*tldSimilarity;
         return totalSimilarity;
     }
 
     private List<String> queryDomains(String tld) {
         List<String> domains = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader("/home/enghin/Documents/Tasks/domainsUK.txt"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader("/home/enghin/Documents/Tasks/ENdomains.txt"))) {
             String line = reader.readLine();
             while (line != null) {
                 domains.add(line.trim());
@@ -152,6 +160,21 @@ public class DomainsService {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        return domains;
+    }
+
+    private List<Domain> getSegmentedDomains(Language language) {
+        List<Domain> domains = new ArrayList<>();
+        Map<String, String> segmentedDomains = jedisClient.getSegmentedDomainsFromRedis(language);
+        for (Map.Entry<String, String> segmentedDomain : segmentedDomains.entrySet()) {
+            Domain domain = new Domain();
+            domain.setDomainName(this.getDomainName(segmentedDomain.getKey()));
+            domain.setTld(this.getTld(segmentedDomain.getKey()));
+            domain.setKeyWords(Arrays.asList(segmentedDomain.getValue().split(" ")));
+            domain.setLanguage(language);
+            domain.setWordEmbeddings(jedisClient.getWordEmbeddings(domain.getKeyWords(), language));
+            domains.add(domain);
         }
         return domains;
     }

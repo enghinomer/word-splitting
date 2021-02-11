@@ -12,6 +12,8 @@ public class Domain {
 
     private Language language;
 
+    private List<double[]> wordEmbeddings;
+
     public String getDomainName() {
         return domainName;
     }
@@ -42,5 +44,13 @@ public class Domain {
 
     public void setLanguage(Language language) {
         this.language = language;
+    }
+
+    public List<double[]> getWordEmbeddings() {
+        return wordEmbeddings;
+    }
+
+    public void setWordEmbeddings(List<double[]> wordEmbeddings) {
+        this.wordEmbeddings = wordEmbeddings;
     }
 }

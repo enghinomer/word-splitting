@@ -31,7 +31,7 @@ public class WordsEmbeddingsService {
                     String word = line.substring(0, line.indexOf(" "));
                     String embedding = line.substring(line.indexOf(" ") + 1);
                     //jedis = jedisPool.getResource();
-                    jedis.hsetnx(key, word, embedding);
+                    jedis.hsetnx(key, word.toLowerCase(), embedding);
                     //jedis.close();
                 /*String [] parts = line.split(" ");
                 double[] embeddingsVector = new double[N];
@@ -45,6 +45,27 @@ public class WordsEmbeddingsService {
             }
         }
         jedis.close();
+    }
+
+    public double getCosineSimilarity(double[] v1, double[] v2) {
+        if (v1 == null || v2 == null) {
+            return 0.0;
+        }
+
+        double dotProduct = 0.0;
+        double norm1 = 0.0;
+        double norm2 = 0.0;
+
+        for (int i = 0; i<v1.length; i++) {
+            dotProduct += v1[i]*v2[i];
+            norm1 += v1[i]*v1[i];
+            norm2 += v2[i]*v2[i];
+        }
+
+        norm1 = Math.sqrt(norm1);
+        norm2 = Math.sqrt(norm2);
+
+        return dotProduct / (norm1*norm2);
     }
 
     public double getCosSimilarity(String word1, String word2) {

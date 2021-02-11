@@ -32,7 +32,7 @@ public class ProbabilityService {
                 //long frequency = Long.parseLong(split[1]);
                 //data.put(split[0], frequency);
                 //this.numberOfTokens += frequency;
-                jedis.hsetnx(key, split[0], split[1]);
+                jedis.hsetnx(key, split[0].toLowerCase(), split[1]);
                 line = reader.readLine();
             }
         }

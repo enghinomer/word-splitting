@@ -28,8 +28,8 @@ public class SimilarityServiceTemp {
     }
 
     public double getDomainsEmbeddingsSimilarity(String reference, String domainName) {
-        List<String> words1 = segmentationService.segment(reference).getWords();
-        List<String> words2 = segmentationService.segment(domainName).getWords();
+        List<String> words1 = segmentationService.segmentEN(reference).getWords();
+        List<String> words2 = segmentationService.segmentEN(domainName).getWords();
 
         double wordSimilarity = 0.0;
         for (String w1 : words1) {
