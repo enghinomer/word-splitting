@@ -3,6 +3,7 @@ package com.ionos.domains.demo.service;
 import com.ionos.domains.demo.model.Candidate;
 import com.ionos.domains.demo.model.Domain;
 import com.ionos.domains.demo.model.Language;
+import com.ionos.domains.demo.service.segmentation.ProbabilityService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,6 +114,36 @@ public class SimilarityService {
             }
         }
         return wordSimilarity /(domain1.getKeyWords().size() + domain2.getKeyWords().size());
+    }
+
+    public double getSIFsimilarity(Domain domain1, Domain domain2) {
+        if (!domain1.getLanguage().equals(domain2.getLanguage())) {
+            return -10;
+        }
+
+        WordsEmbeddingsService embeddingsService = getEmbeddingService(domain1.getLanguage());
+        double[] embeddingAvg1 = new double[300];
+        double[] embeddingAvg2 = new double[300];
+
+        for (int i=0; i<domain1.getWordEmbeddings().size(); i++) {
+            double[] e1 = domain1.getWordEmbeddings().get(i);
+            if (e1 != null) {
+                for (int j = 0; j < 300; j++) {
+                    embeddingAvg1[j] += e1[j] / (domain1.getWordEmbeddings().size());
+                }
+            }
+        }
+
+        for (int i=0; i<domain2.getWordEmbeddings().size(); i++) {
+            double[] e2 = domain2.getWordEmbeddings().get(i);
+            if (e2 != null) {
+                for (int j = 0; j < 300; j++) {
+                    embeddingAvg2[j] += e2[j] / (domain2.getWordEmbeddings().size());
+                }
+            }
+        }
+
+        return embeddingsService.getCosineSimilarity(embeddingAvg1, embeddingAvg2);
     }
 
     public double getTldsSimilarity(String tld1, String tld2) {

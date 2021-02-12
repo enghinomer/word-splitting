@@ -47,52 +47,52 @@ public class ApplicationConfiguration {
 
     @Bean
     public ProbabilityService enUnigramsDistribution() throws IOException {
-        return new ProbabilityService("datasets/en_unigrams.txt", EN_UNIGRAM, jedis, EN_TOKENS);
+        return new ProbabilityService("datasets/new/en-unigrams.txt", EN_UNIGRAM, jedis, EN_TOKENS);
     }
 
     @Bean
     public ProbabilityService enBigramsDistribution() throws IOException {
-        return new ProbabilityService("datasets/en_bigrams.txt", EN_BIGRAM, jedis, EN_TOKENS);
+        return new ProbabilityService("datasets/new/en-bigrams.txt", EN_BIGRAM, jedis, EN_TOKENS);
     }
 
     @Bean
     public ProbabilityService deUnigramsDistribution() throws IOException {
-        return new ProbabilityService("datasets/de_unigrams.txt", DE_UNIGRAM, jedis, DE_TOKENS);
+        return new ProbabilityService("datasets/new/de-unigrams.txt", DE_UNIGRAM, jedis, DE_TOKENS);
     }
 
     @Bean
     public ProbabilityService deBigramsDistribution() throws IOException {
-        return new ProbabilityService("datasets/de_bigrams.txt", DE_BIGRAM, jedis, DE_TOKENS);
+        return new ProbabilityService("datasets/new/de-bigrams.txt", DE_BIGRAM, jedis, DE_TOKENS);
     }
 
     @Bean
     public ProbabilityService esUnigramsDistribution() throws IOException {
-        return new ProbabilityService("datasets/es_unigrams.txt", ES_UNIGRAM, jedis, ES_TOKENS);
+        return new ProbabilityService("datasets/new/es-unigrams.txt", ES_UNIGRAM, jedis, ES_TOKENS);
     }
 
     @Bean
     public ProbabilityService esBigramsDistribution() throws IOException {
-        return new ProbabilityService("datasets/es_bigrams.txt", ES_BIGRAM, jedis, ES_TOKENS);
+        return new ProbabilityService("datasets/new/es-bigrams.txt", ES_BIGRAM, jedis, ES_TOKENS);
     }
 
     @Bean
     public ProbabilityService frUnigramsDistribution() throws IOException {
-        return new ProbabilityService("datasets/fr_unigrams.txt", FR_UNIGRAM, jedis, FR_TOKENS);
+        return new ProbabilityService("datasets/new/fr-unigrams.txt", FR_UNIGRAM, jedis, FR_TOKENS);
     }
 
     @Bean
     public ProbabilityService frBigramsDistribution() throws IOException {
-        return new ProbabilityService("datasets/fr_bigrams.txt", FR_BIGRAM, jedis, FR_TOKENS);
+        return new ProbabilityService("datasets/new/fr-bigrams.txt", FR_BIGRAM, jedis, FR_TOKENS);
     }
 
     @Bean
     public ProbabilityService itUnigramsDistribution() throws IOException {
-        return new ProbabilityService("datasets/it_unigrams.txt", IT_UNIGRAM, jedis, IT_TOKENS);
+        return new ProbabilityService("datasets/new/it-unigrams.txt", IT_UNIGRAM, jedis, IT_TOKENS);
     }
 
     @Bean
     public ProbabilityService itBigramsDistribution() throws IOException {
-        return new ProbabilityService("datasets/it_bigrams.txt", IT_BIGRAM, jedis, IT_TOKENS);
+        return new ProbabilityService("datasets/new/it-bigrams.txt", IT_BIGRAM, jedis, IT_TOKENS);
     }
 
     @Bean

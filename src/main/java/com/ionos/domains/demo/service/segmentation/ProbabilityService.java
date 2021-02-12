@@ -3,15 +3,14 @@ package com.ionos.domains.demo.service.segmentation;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ProbabilityService {
 
     private long totalTokens = 1024908267229L; // nr of tokens in corpus
+    private long maxTotalTokens = 4178523593L;
     private final Map<String, Long> data = new HashMap<>();
     protected BufferedReader reader;
     protected String key;
@@ -20,12 +19,13 @@ public class ProbabilityService {
 
     public ProbabilityService(String fileName, String key, JedisPool jedisPool, long nrTokens) throws IOException {
         System.out.println("Loading " + key);
+        File file = new File(fileName);
         this.key = key;
         this.jedisPool = jedisPool;
         this.totalTokens = nrTokens;
         jedis = jedisPool.getResource();
         if (Boolean.FALSE.equals(jedis.exists(key))) {
-            reader = new BufferedReader(new FileReader(fileName));
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(file),"ISO-8859-1"));
             String line = reader.readLine();
             while (line != null) {
                 final String[] split = line.split("\\t");
@@ -58,7 +58,7 @@ public class ProbabilityService {
 
     private double getProbabilityUnkGram(String gram) {
         // avoid long words
-        return 10/(totalTokens * (Math.pow(10, gram.length())));
+        return 10/(maxTotalTokens * (Math.pow(10, gram.length())));
     }
 
     public double getGramProbabilityMap(String gram) {

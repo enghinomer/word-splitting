@@ -124,7 +124,8 @@ public class DomainsService {
         System.out.println(domain.getDomainName());
         String tld = domain.getTld();
         double tldSimilarity = similarityService.getTldsSimilarity(referenceDomain.getTld(), tld);
-        double domainsSimilarity = similarityService.getEmbeddingsSimilarity(referenceDomain, domain);
+        //double domainsSimilarity = similarityService.getEmbeddingsSimilarity(referenceDomain, domain);
+        double domainsSimilarity = similarityService.getSIFsimilarity(referenceDomain, domain);
         double totalSimilarity = domainsSimilarity + 0.1*tldSimilarity;
         return totalSimilarity;
     }

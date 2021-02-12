@@ -306,17 +306,14 @@ public class SegmentationService {
     }
 
     public static void main(String[] args) throws IOException {
-        Jedis jedis = new Jedis();
+        //Jedis jedis = new Jedis();
 
         SegmentationService segmentationService = new SegmentationService();
 
         int nr = 0;
         int skip = 0;
-        for (String name : query("grandmaster.uk")) {
-            if (nr >70000) {
-                break;
-            }
 
+String name = "adrk-bg-muenchen.de";
             String domainName = getDomainName(name);
 
             final var text = normString(domainName);
@@ -345,16 +342,14 @@ public class SegmentationService {
                 best.setLanguage(Language.IT);
             }
 
-            if (best.getLanguage().equals(Language.IT)) {
                 System.out.println(best.getProbability() + " " + best.getLanguage().name());
                 System.out.println(Arrays.toString(getSegmentedText(domainName, best.getWords()).toArray()));
 
                 String segmented = org.apache.commons.lang3.StringUtils.join(getSegmentedText(domainName, best.getWords()), " ");
-                jedis.hset("Domain-IT", name, segmented);
+                //jedis.hset("Domain-IT", name, segmented);
                 System.out.println(nr);
                 nr++;
-            }
-        }
+
     }
 
     private static String normString(String text) {

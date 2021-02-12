@@ -62,6 +62,10 @@ public class WordsEmbeddingsService {
             norm2 += v2[i]*v2[i];
         }
 
+        if (norm1 == 0 || norm2 == 0) {
+            return 0.0;
+        }
+
         norm1 = Math.sqrt(norm1);
         norm2 = Math.sqrt(norm2);
 
