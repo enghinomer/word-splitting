@@ -4,21 +4,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class Candidate implements Comparable<Candidate> {
+public class Segmentation implements Comparable<Segmentation> {
 
     private double probability;
     private List<String> words;
     private Language language;
 
-    public Candidate() {
+    public Segmentation() {
     }
 
-    public Candidate(double probability, List<String> words) {
+    public Segmentation(double probability, List<String> words) {
         this.probability = probability;
         this.words = new ArrayList<>(words);
     }
 
-    public Candidate(double probability, List<String> words, Language language) {
+    public Segmentation(double probability, List<String> words, Language language) {
         this.probability = probability;
         this.words = words;
         this.language = language;
@@ -52,10 +52,10 @@ public class Candidate implements Comparable<Candidate> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Candidate candidate = (Candidate) o;
-        return Double.compare(candidate.probability, probability) == 0 &&
-                Objects.equals(words, candidate.words) &&
-                language == candidate.language;
+        Segmentation segmentation = (Segmentation) o;
+        return Double.compare(segmentation.probability, probability) == 0 &&
+                Objects.equals(words, segmentation.words) &&
+                language == segmentation.language;
     }
 
     @Override
@@ -64,7 +64,7 @@ public class Candidate implements Comparable<Candidate> {
     }
 
     @Override
-    public int compareTo(Candidate o) {
+    public int compareTo(Segmentation o) {
         return Double.compare(o.getProbability(), this.getProbability());
     }
 }

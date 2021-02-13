@@ -1,6 +1,6 @@
 package com.ionos.domains.demo.service;
 
-import com.ionos.domains.demo.model.Candidate;
+import com.ionos.domains.demo.model.Segmentation;
 import com.ionos.domains.demo.model.Language;
 import com.ionos.domains.demo.service.segmentation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,80 +27,80 @@ public class LanguageDetectionService {
     @Autowired
     private ItSegmentationService itSegmentationService;
 
-    public Candidate getBestCandidate(String domainName) {
-        Candidate bestCandidate = enSegmentationService.segment(domainName);
-        bestCandidate.setLanguage(Language.EN);
+    public Segmentation getBestCandidate(String domainName) {
+        Segmentation bestSegmentation = enSegmentationService.segment(domainName);
+        bestSegmentation.setLanguage(Language.EN);
 
-        Candidate deCandidate = deSegmentationService.segment(domainName);
-        if (deCandidate.getProbability() > bestCandidate.getProbability()) {
-            bestCandidate = deCandidate;
-            bestCandidate.setLanguage(Language.DE);
+        Segmentation deSegmentation = deSegmentationService.segment(domainName);
+        if (deSegmentation.getProbability() > bestSegmentation.getProbability()) {
+            bestSegmentation = deSegmentation;
+            bestSegmentation.setLanguage(Language.DE);
         }
 
-        Candidate esCandidate = esSegmentationService.segment(domainName);
-        if (esCandidate.getProbability() > bestCandidate.getProbability()) {
-            bestCandidate = esCandidate;
-            bestCandidate.setLanguage(Language.ES);
+        Segmentation esSegmentation = esSegmentationService.segment(domainName);
+        if (esSegmentation.getProbability() > bestSegmentation.getProbability()) {
+            bestSegmentation = esSegmentation;
+            bestSegmentation.setLanguage(Language.ES);
         }
 
-        Candidate frCandidate = frSegmentationService.segment(domainName);
-        if (frCandidate.getProbability() > bestCandidate.getProbability()) {
-            bestCandidate = frCandidate;
-            bestCandidate.setLanguage(Language.FR);
+        Segmentation frSegmentation = frSegmentationService.segment(domainName);
+        if (frSegmentation.getProbability() > bestSegmentation.getProbability()) {
+            bestSegmentation = frSegmentation;
+            bestSegmentation.setLanguage(Language.FR);
         }
 
-        Candidate itCandidate = itSegmentationService.segment(domainName);
-        if (itCandidate.getProbability() > bestCandidate.getProbability()) {
-            bestCandidate = itCandidate;
-            bestCandidate.setLanguage(Language.IT);
+        Segmentation itSegmentation = itSegmentationService.segment(domainName);
+        if (itSegmentation.getProbability() > bestSegmentation.getProbability()) {
+            bestSegmentation = itSegmentation;
+            bestSegmentation.setLanguage(Language.IT);
         }
-        return bestCandidate;
+        return bestSegmentation;
     }
 
-    public List<Candidate> getCandidates(String domainName) {
+    public List<Segmentation> getSegmentations(String domainName) {
         final var text = normString(domainName);
-        List<Candidate> bestCandidates = enSegmentationService.getAllCandidates(text);
-        for (Candidate candidate : bestCandidates) {
-            candidate.setLanguage(Language.EN);
+        List<Segmentation> bestSegmentations = enSegmentationService.getAllSegmentations(text);
+        for (Segmentation segmentation : bestSegmentations) {
+            segmentation.setLanguage(Language.EN);
         }
 
-        List<Candidate> deCandidates = deSegmentationService.getAllCandidates(text);
-        if (deCandidates.get(0).getProbability() > bestCandidates.get(0).getProbability()) {
-            bestCandidates = deCandidates;
-            for (Candidate candidate : bestCandidates) {
-                candidate.setLanguage(Language.DE);
+        List<Segmentation> deSegmentations = deSegmentationService.getAllSegmentations(text);
+        if (deSegmentations.get(0).getProbability() > bestSegmentations.get(0).getProbability()) {
+            bestSegmentations = deSegmentations;
+            for (Segmentation segmentation : bestSegmentations) {
+                segmentation.setLanguage(Language.DE);
             }
         }
 
-        List<Candidate> esCandidates = esSegmentationService.getAllCandidates(text);
-        if (esCandidates.get(0).getProbability() > bestCandidates.get(0).getProbability()) {
-            bestCandidates = esCandidates;
-            for (Candidate candidate : bestCandidates) {
-                candidate.setLanguage(Language.ES);
+        List<Segmentation> esSegmentations = esSegmentationService.getAllSegmentations(text);
+        if (esSegmentations.get(0).getProbability() > bestSegmentations.get(0).getProbability()) {
+            bestSegmentations = esSegmentations;
+            for (Segmentation segmentation : bestSegmentations) {
+                segmentation.setLanguage(Language.ES);
             }
         }
 
-        List<Candidate> frCandidates = frSegmentationService.getAllCandidates(text);
-        if (frCandidates.get(0).getProbability() > bestCandidates.get(0).getProbability()) {
-            bestCandidates = frCandidates;
-            for (Candidate candidate : bestCandidates) {
-                candidate.setLanguage(Language.FR);
+        List<Segmentation> frSegmentations = frSegmentationService.getAllSegmentations(text);
+        if (frSegmentations.get(0).getProbability() > bestSegmentations.get(0).getProbability()) {
+            bestSegmentations = frSegmentations;
+            for (Segmentation segmentation : bestSegmentations) {
+                segmentation.setLanguage(Language.FR);
             }
         }
 
-        List<Candidate> itCandidates = itSegmentationService.getAllCandidates(text);
-        if (itCandidates.get(0).getProbability() > bestCandidates.get(0).getProbability()) {
-            bestCandidates = itCandidates;
-            for (Candidate candidate : bestCandidates) {
-                candidate.setLanguage(Language.IT);
+        List<Segmentation> itSegmentations = itSegmentationService.getAllSegmentations(text);
+        if (itSegmentations.get(0).getProbability() > bestSegmentations.get(0).getProbability()) {
+            bestSegmentations = itSegmentations;
+            for (Segmentation segmentation : bestSegmentations) {
+                segmentation.setLanguage(Language.IT);
             }
         }
 
-        for (Candidate candidate : bestCandidates) {
-            candidate.setWords(getSegmentedText(domainName, candidate.getWords()));
+        for (Segmentation segmentation : bestSegmentations) {
+            segmentation.setWords(getSegmentedText(domainName, segmentation.getWords()));
         }
 
-        return bestCandidates;
+        return bestSegmentations;
     }
 
     private String normString(String text) {

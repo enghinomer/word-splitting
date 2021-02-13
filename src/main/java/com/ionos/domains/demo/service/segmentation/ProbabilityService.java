@@ -29,9 +29,6 @@ public class ProbabilityService {
             String line = reader.readLine();
             while (line != null) {
                 final String[] split = line.split("\\t");
-                //long frequency = Long.parseLong(split[1]);
-                //data.put(split[0], frequency);
-                //this.numberOfTokens += frequency;
                 jedis.hsetnx(key, split[0].toLowerCase(), split[1]);
                 line = reader.readLine();
             }
@@ -46,26 +43,12 @@ public class ProbabilityService {
             return (double) Long.parseLong(jedis.hget(key, gram))/ totalTokens;
         }
         jedis.close();
-        /*if (data.containsKey(gram)) {
-            return (double)data.get(gram)/N;
-        }*/
         return getProbabilityUnkGram(gram);
-    }
-
-    public Map<String, Long> getData() {
-        return data;
     }
 
     private double getProbabilityUnkGram(String gram) {
         // avoid long words
         return 10/(maxTotalTokens * (Math.pow(10, gram.length())));
-    }
-
-    public double getGramProbabilityMap(String gram) {
-        if (data.containsKey(gram)) {
-            return (double)data.get(gram)/ totalTokens;
-        }
-        return getProbabilityUnkGram(gram);
     }
 
 }

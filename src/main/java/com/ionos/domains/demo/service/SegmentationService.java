@@ -1,10 +1,9 @@
 package com.ionos.domains.demo.service;
 
-import com.ionos.domains.demo.model.Candidate;
+import com.ionos.domains.demo.model.Segmentation;
 import com.ionos.domains.demo.model.Language;
 import com.ionos.domains.demo.model.ProbDistribution;
 import org.springframework.util.StringUtils;
-import redis.clients.jedis.Jedis;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -14,6 +13,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Deprecated
 public class SegmentationService {
 
     private ProbDistribution unigramDistributionEN;
@@ -26,8 +26,8 @@ public class SegmentationService {
     private ProbDistribution bigramDistributionFR;
     private ProbDistribution unigramDistributionIT;
     private ProbDistribution bigramDistributionIT;
-    private Map<String, Candidate> terms = new HashMap<>();
-    List<Candidate> lastCandidates = new ArrayList<>();
+    private Map<String, Segmentation> terms = new HashMap<>();
+    List<Segmentation> lastSegmentations = new ArrayList<>();
 
     private final int longestWord = 20;
 
@@ -48,22 +48,22 @@ public class SegmentationService {
         bigramDistributionIT = new ProbDistribution("datasets/new/it-bigrams.txt", 4178523593L);
     }
 
-    public Candidate segmentEN(String text, String prev) {
+    public Segmentation segmentEN(String text, String prev) {
         if (StringUtils.isEmpty(prev)) {
             prev = "<S>";
         }
         if (StringUtils.isEmpty(text)) {
-            return new Candidate(0.0, new ArrayList<>());
+            return new Segmentation(0.0, new ArrayList<>());
         }
 
-        List<Candidate> candidates = new ArrayList<>();
+        List<Segmentation> segmentations = new ArrayList<>();
         for (List<String> split : this.getSplits(text)) {
             String first = split.get(0);
             String remaining = split.get(1);
             if (!terms.containsKey(remaining + " " + first)) {
                 terms.put(remaining + " " + first, segmentEN(remaining, first));
             }
-            candidates.add(combine(new Candidate(Math.log10(conditionalProbabilityEN(first, prev)), Collections.singletonList(first)),
+            segmentations.add(combine(new Segmentation(Math.log10(conditionalProbabilityEN(first, prev)), Collections.singletonList(first)),
                     terms.get(remaining + " " + first)));
         }
 
@@ -71,27 +71,27 @@ public class SegmentationService {
             System.out.println(candidate.getProbability() + " " + Arrays.toString(candidate.getWords().toArray()));
         }*/
 
-        lastCandidates = candidates;
+        lastSegmentations = segmentations;
         //System.out.println("==================");
-        return max(candidates);
+        return max(segmentations);
     }
 
-    public Candidate segmentDE(String text, String prev) {
+    public Segmentation segmentDE(String text, String prev) {
         if (StringUtils.isEmpty(prev)) {
             prev = "<S>";
         }
         if (StringUtils.isEmpty(text)) {
-            return new Candidate(0.0, new ArrayList<>());
+            return new Segmentation(0.0, new ArrayList<>());
         }
 
-        List<Candidate> candidates = new ArrayList<>();
+        List<Segmentation> segmentations = new ArrayList<>();
         for (List<String> split : this.getSplits(text)) {
             String first = split.get(0);
             String remaining = split.get(1);
             if (!terms.containsKey(remaining + " " + first)) {
                 terms.put(remaining + " " + first, segmentDE(remaining, first));
             }
-            candidates.add(combine(new Candidate(Math.log10(conditionalProbabilityDE(first, prev)), Collections.singletonList(first)),
+            segmentations.add(combine(new Segmentation(Math.log10(conditionalProbabilityDE(first, prev)), Collections.singletonList(first)),
                     terms.get(remaining + " " + first)));
         }
 
@@ -99,27 +99,27 @@ public class SegmentationService {
             System.out.println(candidate.getProbability() + " " + Arrays.toString(candidate.getWords().toArray()));
         }*/
 
-        lastCandidates = candidates;
+        lastSegmentations = segmentations;
         //System.out.println("==================");
-        return max(candidates);
+        return max(segmentations);
     }
 
-    public Candidate segmentES(String text, String prev) {
+    public Segmentation segmentES(String text, String prev) {
         if (StringUtils.isEmpty(prev)) {
             prev = "<S>";
         }
         if (StringUtils.isEmpty(text)) {
-            return new Candidate(0.0, new ArrayList<>());
+            return new Segmentation(0.0, new ArrayList<>());
         }
 
-        List<Candidate> candidates = new ArrayList<>();
+        List<Segmentation> segmentations = new ArrayList<>();
         for (List<String> split : this.getSplits(text)) {
             String first = split.get(0);
             String remaining = split.get(1);
             if (!terms.containsKey(remaining + " " + first)) {
                 terms.put(remaining + " " + first, segmentES(remaining, first));
             }
-            candidates.add(combine(new Candidate(Math.log10(conditionalProbabilityES(first, prev)), Collections.singletonList(first)),
+            segmentations.add(combine(new Segmentation(Math.log10(conditionalProbabilityES(first, prev)), Collections.singletonList(first)),
                     terms.get(remaining + " " + first)));
         }
 
@@ -127,27 +127,27 @@ public class SegmentationService {
             System.out.println(candidate.getProbability() + " " + Arrays.toString(candidate.getWords().toArray()));
         }*/
 
-        lastCandidates = candidates;
+        lastSegmentations = segmentations;
         //System.out.println("==================");
-        return max(candidates);
+        return max(segmentations);
     }
 
-    public Candidate segmentFR(String text, String prev) {
+    public Segmentation segmentFR(String text, String prev) {
         if (StringUtils.isEmpty(prev)) {
             prev = "<S>";
         }
         if (StringUtils.isEmpty(text)) {
-            return new Candidate(0.0, new ArrayList<>());
+            return new Segmentation(0.0, new ArrayList<>());
         }
 
-        List<Candidate> candidates = new ArrayList<>();
+        List<Segmentation> segmentations = new ArrayList<>();
         for (List<String> split : this.getSplits(text)) {
             String first = split.get(0);
             String remaining = split.get(1);
             if (!terms.containsKey(remaining + " " + first)) {
                 terms.put(remaining + " " + first, segmentFR(remaining, first));
             }
-            candidates.add(combine(new Candidate(Math.log10(conditionalProbabilityFR(first, prev)), Collections.singletonList(first)),
+            segmentations.add(combine(new Segmentation(Math.log10(conditionalProbabilityFR(first, prev)), Collections.singletonList(first)),
                     terms.get(remaining + " " + first)));
         }
 
@@ -155,27 +155,27 @@ public class SegmentationService {
             System.out.println(candidate.getProbability() + " " + Arrays.toString(candidate.getWords().toArray()));
         }*/
 
-        lastCandidates = candidates;
+        lastSegmentations = segmentations;
         //System.out.println("==================");
-        return max(candidates);
+        return max(segmentations);
     }
 
-    public Candidate segmentIT(String text, String prev) {
+    public Segmentation segmentIT(String text, String prev) {
         if (StringUtils.isEmpty(prev)) {
             prev = "<S>";
         }
         if (StringUtils.isEmpty(text)) {
-            return new Candidate(0.0, new ArrayList<>());
+            return new Segmentation(0.0, new ArrayList<>());
         }
 
-        List<Candidate> candidates = new ArrayList<>();
+        List<Segmentation> segmentations = new ArrayList<>();
         for (List<String> split : this.getSplits(text)) {
             String first = split.get(0);
             String remaining = split.get(1);
             if (!terms.containsKey(remaining + " " + first)) {
                 terms.put(remaining + " " + first, segmentIT(remaining, first));
             }
-            candidates.add(combine(new Candidate(Math.log10(conditionalProbabilityIT(first, prev)), Collections.singletonList(first)),
+            segmentations.add(combine(new Segmentation(Math.log10(conditionalProbabilityIT(first, prev)), Collections.singletonList(first)),
                     terms.get(remaining + " " + first)));
         }
 
@@ -183,26 +183,26 @@ public class SegmentationService {
             System.out.println(candidate.getProbability() + " " + Arrays.toString(candidate.getWords().toArray()));
         }*/
 
-        lastCandidates = candidates;
+        lastSegmentations = segmentations;
         //System.out.println("==================");
-        return max(candidates);
+        return max(segmentations);
     }
 
-    public List<Candidate> getLastCandidates() {
-        return this.lastCandidates;
+    public List<Segmentation> getLastCandidates() {
+        return this.lastSegmentations;
     }
 
-    private Candidate max(List<Candidate> candidates) {
-        if (candidates.isEmpty()) {
+    private Segmentation max(List<Segmentation> segmentations) {
+        if (segmentations.isEmpty()) {
             return null;
         }
-        Candidate maxCandidate = candidates.get(0);
-        for (Candidate candidate : candidates) {
-            if (candidate.getProbability() > maxCandidate.getProbability()) {
-                maxCandidate = candidate;
+        Segmentation maxSegmentation = segmentations.get(0);
+        for (Segmentation segmentation : segmentations) {
+            if (segmentation.getProbability() > maxSegmentation.getProbability()) {
+                maxSegmentation = segmentation;
             }
         }
-        return maxCandidate;
+        return maxSegmentation;
     }
 
     private double conditionalProbabilityEN(String word, String prev) {
@@ -258,33 +258,33 @@ public class SegmentationService {
     }
 
     //Combine first and rem results into one (probability, words) pair
-    private Candidate combine(Candidate first, Candidate remaining) {
-        return new Candidate(first.getProbability() + remaining.getProbability(),
+    private Segmentation combine(Segmentation first, Segmentation remaining) {
+        return new Segmentation(first.getProbability() + remaining.getProbability(),
                 Stream.concat(first.getWords().stream(), remaining.getWords().stream())
                         .collect(Collectors.toList()));
     }
 
-    public Candidate segmentEN(String text) {
+    public Segmentation segmentEN(String text) {
         terms.clear();
         return this.segmentEN(text, null);
     }
 
-    public Candidate segmentDE(String text) {
+    public Segmentation segmentDE(String text) {
         terms.clear();
         return this.segmentDE(text, null);
     }
 
-    public Candidate segmentFR(String text) {
+    public Segmentation segmentFR(String text) {
         terms.clear();
         return this.segmentFR(text, null);
     }
 
-    public Candidate segmentES(String text) {
+    public Segmentation segmentES(String text) {
         terms.clear();
         return this.segmentES(text, null);
     }
 
-    public Candidate segmentIT(String text) {
+    public Segmentation segmentIT(String text) {
         terms.clear();
         return this.segmentIT(text, null);
     }
@@ -317,28 +317,28 @@ String name = "adrk-bg-muenchen.de";
             String domainName = getDomainName(name);
 
             final var text = normString(domainName);
-            Candidate best;
-            Candidate candidateEN = segmentationService.segmentEN(text);
-            best = candidateEN;
+            Segmentation best;
+            Segmentation segmentationEN = segmentationService.segmentEN(text);
+            best = segmentationEN;
             best.setLanguage(Language.EN);
-            Candidate candidateDE = segmentationService.segmentDE(text);
-            if (candidateDE.getProbability() > best.getProbability()) {
-                best = candidateDE;
+            Segmentation segmentationDE = segmentationService.segmentDE(text);
+            if (segmentationDE.getProbability() > best.getProbability()) {
+                best = segmentationDE;
                 best.setLanguage(Language.DE);
             }
-            Candidate candidateES = segmentationService.segmentES(text);
-            if (candidateES.getProbability() > best.getProbability()) {
-                best = candidateES;
+            Segmentation segmentationES = segmentationService.segmentES(text);
+            if (segmentationES.getProbability() > best.getProbability()) {
+                best = segmentationES;
                 best.setLanguage(Language.ES);
             }
-            Candidate candidateFR = segmentationService.segmentFR(text);
-            if (candidateFR.getProbability() > best.getProbability()) {
-                best = candidateFR;
+            Segmentation segmentationFR = segmentationService.segmentFR(text);
+            if (segmentationFR.getProbability() > best.getProbability()) {
+                best = segmentationFR;
                 best.setLanguage(Language.FR);
             }
-            Candidate candidateIT = segmentationService.segmentIT(text);
-            if (candidateIT.getProbability() > best.getProbability()) {
-                best = candidateIT;
+            Segmentation segmentationIT = segmentationService.segmentIT(text);
+            if (segmentationIT.getProbability() > best.getProbability()) {
+                best = segmentationIT;
                 best.setLanguage(Language.IT);
             }
 

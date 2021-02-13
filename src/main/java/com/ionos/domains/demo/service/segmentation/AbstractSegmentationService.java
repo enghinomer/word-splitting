@@ -1,7 +1,6 @@
 package com.ionos.domains.demo.service.segmentation;
 
-import com.ionos.domains.demo.model.Candidate;
-import com.ionos.domains.demo.model.Language;
+import com.ionos.domains.demo.model.Segmentation;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -18,25 +17,25 @@ public abstract class AbstractSegmentationService {
 
     private final int longestWord = 20;
 
-    private Map<String, Candidate> terms = new HashMap<>();
-    List<Candidate> lastCandidates = new ArrayList<>();
+    private Map<String, Segmentation> terms = new HashMap<>();
+    List<Segmentation> lastSegmentations = new ArrayList<>();
 
-    public Candidate segment(String text, String prev) {
+    public Segmentation segment(String text, String prev) {
         if (StringUtils.isEmpty(prev)) {
             prev = "<S>";
         }
         if (StringUtils.isEmpty(text)) {
-            return new Candidate(0.0, new ArrayList<>());
+            return new Segmentation(0.0, new ArrayList<>());
         }
 
-        List<Candidate> candidates = new ArrayList<>();
+        List<Segmentation> segmentations = new ArrayList<>();
         for (List<String> split : this.getSplits(text)) {
             String first = split.get(0);
             String remaining = split.get(1);
             if (!terms.containsKey(remaining + " " + first)) {
                 terms.put(remaining + " " + first, segment(remaining, first));
             }
-            candidates.add(combine(new Candidate(Math.log10(conditionalProbability(first, prev)), Collections.singletonList(first)),
+            segmentations.add(combine(new Segmentation(Math.log10(conditionalProbability(first, prev)), Collections.singletonList(first)),
                     terms.get(remaining + " " + first)));
         }
 
@@ -44,22 +43,22 @@ public abstract class AbstractSegmentationService {
             System.out.println(candidate.getProbability() + " " + Arrays.toString(candidate.getWords().toArray()));
         }*/
 
-        lastCandidates = candidates;
+        lastSegmentations = segmentations;
         //System.out.println("==================");
-        return max(candidates);
+        return max(segmentations);
     }
 
-    private Candidate max(List<Candidate> candidates) {
-        if (candidates.isEmpty()) {
+    private Segmentation max(List<Segmentation> segmentations) {
+        if (segmentations.isEmpty()) {
             return null;
         }
-        Candidate maxCandidate = candidates.get(0);
-        for (Candidate candidate : candidates) {
-            if (candidate.getProbability() > maxCandidate.getProbability()) {
-                maxCandidate = candidate;
+        Segmentation maxSegmentation = segmentations.get(0);
+        for (Segmentation segmentation : segmentations) {
+            if (segmentation.getProbability() > maxSegmentation.getProbability()) {
+                maxSegmentation = segmentation;
             }
         }
-        return maxCandidate;
+        return maxSegmentation;
     }
 
     //Return a list of all possible splits
@@ -75,21 +74,21 @@ public abstract class AbstractSegmentationService {
     }
 
     //Combine first and rem results into one (probability, words) pair
-    private Candidate combine(Candidate first, Candidate remaining) {
-        return new Candidate(first.getProbability() + remaining.getProbability(),
+    private Segmentation combine(Segmentation first, Segmentation remaining) {
+        return new Segmentation(first.getProbability() + remaining.getProbability(),
                 Stream.concat(first.getWords().stream(), remaining.getWords().stream())
                         .collect(Collectors.toList()));
     }
 
-    public Candidate segment(String text) {
-        Candidate candidate = this.segment(text, null);
-        return candidate;
+    public Segmentation segment(String text) {
+        Segmentation segmentation = this.segment(text, null);
+        return segmentation;
     }
 
-    public List<Candidate> getAllCandidates(String text) {
+    public List<Segmentation> getAllSegmentations(String text) {
         segment(text);
-        Collections.sort(this.lastCandidates);
-        return this.lastCandidates;
+        Collections.sort(this.lastSegmentations);
+        return this.lastSegmentations;
     }
 
     abstract double conditionalProbability(String word, String prev);

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 public class ProbDistribution {
 
     private long N = 1708180445L; // nr of tokens in corpus

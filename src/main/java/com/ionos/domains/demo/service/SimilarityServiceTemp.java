@@ -5,6 +5,7 @@ import org.apache.commons.text.similarity.LevenshteinDistance;
 import java.io.*;
 import java.util.*;
 
+@Deprecated
 public class SimilarityServiceTemp {
 
     public static Map<String, Double> wordNetSim = new HashMap<>();

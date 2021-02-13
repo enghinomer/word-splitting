@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 public class WordEmbeddingService {
     public static final String FILE_NAME = "/home/enghin/Documents/Personal/Projects/wordSuggestion/datasets/slim.cc.en.300.vec";
     Map<String, double[]> wordEmbeddings = new HashMap<>();

@@ -1,9 +1,8 @@
 package com.ionos.domains.demo.service;
 
-import com.ionos.domains.demo.model.Candidate;
+import com.ionos.domains.demo.model.Segmentation;
 import com.ionos.domains.demo.model.Domain;
 import com.ionos.domains.demo.model.Language;
-import com.ionos.domains.demo.service.segmentation.ProbabilityService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,10 +12,8 @@ import redis.clients.jedis.JedisPool;
 
 import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.List;
 
 @Service
 public class SimilarityService {
@@ -71,51 +68,6 @@ public class SimilarityService {
         return levenshteinDistance.apply(word1, word2);
     }
 
-    public double getCandidatesEmbeddingsSimilarity(Candidate domain1, Candidate domain2) {
-        if (!domain1.getLanguage().equals(domain2.getLanguage())) {
-            return -10;
-        }
-
-        WordsEmbeddingsService embeddingsService = getEmbeddingService(domain1.getLanguage());
-        double wordSimilarity = 0.0;
-        for (String w1 : domain1.getWords()) {
-            for (String w2 : domain2.getWords()) {
-                wordSimilarity += embeddingsService.getCosSimilarity(w1, w2);
-            }
-        }
-        return wordSimilarity /(domain1.getWords().size() + domain2.getWords().size());
-    }
-
-    public double getDomainsEmbeddingsSimilarity(Domain domain1, Domain domain2) {
-        if (!domain1.getLanguage().equals(domain2.getLanguage())) {
-            return -10;
-        }
-
-        WordsEmbeddingsService embeddingsService = getEmbeddingService(domain1.getLanguage());
-        double wordSimilarity = 0.0;
-        for (String w1 : domain1.getKeyWords()) {
-            for (String w2 : domain2.getKeyWords()) {
-                wordSimilarity += embeddingsService.getCosSimilarity(w1, w2);
-            }
-        }
-        return wordSimilarity /(domain1.getKeyWords().size() + domain2.getKeyWords().size());
-    }
-
-    public double getEmbeddingsSimilarity(Domain domain1, Domain domain2) {
-        if (!domain1.getLanguage().equals(domain2.getLanguage())) {
-            return -10;
-        }
-
-        WordsEmbeddingsService embeddingsService = getEmbeddingService(domain1.getLanguage());
-        double wordSimilarity = 0.0;
-        for (double[] e1 : domain1.getWordEmbeddings()) {
-            for (double[] e2 : domain2.getWordEmbeddings()) {
-                wordSimilarity += embeddingsService.getCosineSimilarity(e1, e2);
-            }
-        }
-        return wordSimilarity /(domain1.getKeyWords().size() + domain2.getKeyWords().size());
-    }
-
     public double getSIFsimilarity(Domain domain1, Domain domain2) {
         if (!domain1.getLanguage().equals(domain2.getLanguage())) {
             return -10;
@@ -148,10 +100,6 @@ public class SimilarityService {
 
     public double getTldsSimilarity(String tld1, String tld2) {
         Jedis jedisInstance = pool.getResource();
-        /*if (Boolean.FALSE.equals(jedisInstance.hexists(TLDS_SIM_KEY, tld1))) {
-            jedisInstance.close();
-            return 0.0;
-        }*/
         String tldSimilarities = jedisInstance.hget(TLDS_SIM_KEY, tld1);
         jedisInstance.close();
         if (tldSimilarities == null) {
