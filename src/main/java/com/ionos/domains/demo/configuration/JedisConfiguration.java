@@ -14,9 +14,7 @@ public class JedisConfiguration {
 
     @Bean
     public JedisPool jedis() {
-        //return new Jedis();
-        JedisPool jedisPool = new JedisPool(buildPoolConfig(), "localhost");
-        return jedisPool;
+        return new JedisPool(buildPoolConfig(), "localhost");
     }
 
     private JedisPoolConfig buildPoolConfig() {
